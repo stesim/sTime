@@ -20,22 +20,40 @@ export default class DailyTrackerComponent extends Component {
     this._time = new Variable(new Date());
     this._clockInterval = setInterval(() => {
       this._time.value = new Date();
-      if (this._activeTask !== null) {
-        ++this._activeTask.elapsedSeconds.value;
-        // this._activeTask.elapsedSeconds.value += 60;
-      }
     }, 1000);
+    this._flushInterval = setInterval(() => {
+      if (this._activeTask !== null) {
+        this._flushElapsedTime();
+      }
+    }, 10000)
+    this._activeTaskIndex = null;
+    this._lastUpdateTime = null;
 
     this._listComponent = new TaskListComponent();
     this._listComponent.tasks = this._tasks.value;
+    this._listComponent.onActiveTaskChanged = (taskIndex) => {
+      this._flushElapsedTime();
+      this._activeTaskIndex = taskIndex;
+    };
     this._tasks.onChange((newTasks) => {
       this._listComponent.tasks = newTasks;
     });
   }
 
   get _activeTask() {
-    const index = this._listComponent.activeTask;
+    const index = this._activeTaskIndex;
     return (index !== null ? this._tasks.value[index] : null);
+  }
+
+  _flushElapsedTime() {
+    const now = new Date();
+    if (this._activeTask !== null) {
+      const deltaMilliseconds = (now.valueOf() - this._lastUpdateTime.valueOf());
+      const deltaSeconds = (deltaMilliseconds / 1000);
+      this._activeTask.elapsedSeconds.value += deltaSeconds;
+      // this._activeTask.elapsedSeconds.value += deltaSeconds * 60;
+    }
+    this._lastUpdateTime = now;
   }
 
   $render() {
