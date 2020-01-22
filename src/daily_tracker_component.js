@@ -19,10 +19,12 @@ export default class DailyTrackerComponent extends Component {
     this._tasks = new Variable([]);
     this._time = new Variable(new Date());
     this._clockInterval = setInterval(() => {
-      this._time.value = new Date();
+      if (!document.hidden) {
+        this._time.value = new Date();
+      }
     }, 1000);
     this._flushInterval = setInterval(() => {
-      if (this._activeTask !== null) {
+      if (!document.hidden && this._activeTask !== null) {
         this._flushElapsedTime();
       }
     }, 10000)
