@@ -1,39 +1,41 @@
-const cacheName = 'generic-cache';
-const cachedRequests = [
-  'src/base/component.js',
-  'src/base/dom_component.js',
-  'src/base/map_variables.js',
-  'src/base/render.js',
-  'src/base/variable.js',
+const staticCacheVersion = 1;
+const dynamicCacheVersion = 1;
+
+const staticCacheResources = [
   'src/app.js',
-  'src/clock_component.js',
-  'src/daily_tracker_component.js',
-  'src/main.js',
-  'src/task_list_component.js',
-  'src/time_ticket_component.js',
-  'src/toggle_button_component.js',
-  'style/main.css',
+  'apple-touch-icon.png',
   'index.html',
   '.',
 ];
 
+const staticCacheName = `static-cache-v${staticCacheVersion}`;
+const dynamicCacheName = `dynamic-cache-v${dynamicCacheVersion}`;
+
 self.addEventListener('install', (event) => {
-  console.log('service worker installed');
   event.waitUntil(
-    caches.open(cacheName).then((cache) => {
-      cache.addAll(cachedRequests);
+    caches.open(staticCacheName).then((cache) => {
+      cache.addAll(staticCacheResources);
     })
   );
 });
-// 
 
 self.addEventListener('activate', (event) => {
-  console.log('service worker activated');
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(keys
+        .filter((key) => (key !== staticCacheName && key !== dynamicCacheName))
+        .forEach((key) => caches.delete(key)));
+    })
+  );
 });
 
 self.addEventListener('fetch', (event) => {
-  console.log('fetch event', event);
   event.respondWith(caches.match(event.request).then((cachedResponse) => {
-    return (cachedResponse || fetch(event.request));
+    return (cachedResponse || fetch(event.request).then((response) => {
+      return caches.open(dynamicCacheName).then((dynamicCache) => {
+        dynamicCache.put(event.request.url, response.clone());
+        return response;
+      });
+    }));
   }));
 });
