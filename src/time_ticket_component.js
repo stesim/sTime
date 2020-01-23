@@ -28,7 +28,7 @@ export default class TimeTicketComponent extends Component {
     this._ticketName = new Variable('unnamed');
     this._elapsedSeconds = new Variable(0);
     this.onClick = undefined;
-    this._backgroundColor = new Variable(undefined);
+    this._style = new Variable({});
   }
 
   get name() {
@@ -47,12 +47,12 @@ export default class TimeTicketComponent extends Component {
     this._elapsedSeconds.value = value;
   }
 
-  get backgroundColor() {
-    return this._backgroundColor.value;
+  get style() {
+    return this._style.value;
   }
 
-  set backgroundColor(value) {
-    this._backgroundColor.value = value;
+  set style(value) {
+    this._style.value = value;
   }
 
   $render() {
@@ -80,10 +80,11 @@ export default class TimeTicketComponent extends Component {
           margin: '0.2em',
         },
       }],
-      style: mapVariables([this._backgroundColor], () => ({
-        backgroundColor: this._backgroundColor.value || '#555577',
+      style: mapVariables([this._style], () => ({
+        backgroundColor: '#555577',
         borderRadius: '0.75em',
         padding: '0.75em',
+        ...this._style.value,
       })),
     });
   }

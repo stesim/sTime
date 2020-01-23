@@ -3,6 +3,7 @@ import render from './base/render.js';
 import ClockComponent from './clock_component.js';
 import Variable from './base/variable.js';
 import TaskListComponent from './task_list_component.js';
+import LabeledTextComponent from './labeled_text_component.js';
 
 function formatDate(date) {
   const options = {
@@ -61,11 +62,18 @@ export default class DailyTrackerComponent extends Component {
   $render() {
     return render({
       type: 'div',
+      style: {
+        display: 'grid',
+        width: '100vw',
+        height: '100vh',
+        gridTemplateRows: 'auto 1fr auto',
+      },
       children: [{
         type: 'div',
         style: {
           textAlign: 'center',
           fontSize: '1.5em',
+          marginBottom: '0.5em',
         },
         children: [{
           type: 'div',
@@ -79,9 +87,38 @@ export default class DailyTrackerComponent extends Component {
           type: ClockComponent,
           time: this._time,
         }],
-      },
-      this._listComponent,
-      {
+      }, {
+        type: 'div',
+        style: {
+          padding: '0.5em',
+          overflow: 'auto',
+        },
+        children: [this._listComponent],
+      }, {
+        type: 'div',
+        style: {
+          backgroundColor: '#444466',
+          padding: '1em',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          overflow: 'visible',
+        },
+        children: [{
+          type: LabeledTextComponent,
+          label: 'Start',
+          content: 'now',
+        },  {
+          type: 'div',
+          style: {
+            textAlign: 'right',
+          },
+          children: [{
+            type: LabeledTextComponent,
+            label: 'Summary',
+            content: '0h 0m (0.0h)',
+          }],
+        }],
+      }, {
         type: 'div',
         innerText: '+',
         onclick: () => {
@@ -93,22 +130,23 @@ export default class DailyTrackerComponent extends Component {
           }
         },
         style: {
-          fontSize: '2em',
+          position: 'absolute',
+          bottom: '-0.25em',
+          left: 0,
+          right: 0,
+          margin: '0 auto',
+          fontSize: '4em',
           fontWeight: 'bold',
           textAlign: 'center',
-          width: '3em',
-          height: '3em',
-          borderRadius: '1.5em',
+          width: '1.5em',
+          height: '1.5em',
+          lineHeight: '1.5em',
+          borderRadius: '1.0em',
           backgroundColor: '#555577',
-          lineHeight: '3em',
           cursor: 'pointer',
-          margin: '0 auto',
+          border: '0.1em solid #14141b',
         },
       }],
-      style: {
-        display: 'grid',
-        rowGap: '1em',
-      }
     });
   }
 }

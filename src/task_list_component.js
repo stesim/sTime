@@ -44,13 +44,15 @@ export default class TaskListComponent extends Component {
         onClick: () => {
           this._activeTask.value = index;
         },
-        backgroundColor: mapVariables([this._activeTask], () => {
-          return (index === this._activeTask.value ? '#557755' : '#555577');
-        }),
+        style: mapVariables([this._activeTask], () => ({
+          backgroundColor: (index === this._activeTask.value ? '#557755' : '#555577'),
+          marginBottom: '0.5em',
+        })),
       }))),
       style: {
-        display: 'grid',
-        rowGap: '0.5em',
+        display: 'flex',
+        flexDirection: 'column',
+        flexWrap: 'nowrap',
       }
     });
   }
