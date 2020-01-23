@@ -2,21 +2,7 @@ import Component from './base/component.js';
 import Variable from './base/variable.js';
 import render from './base/render.js';
 import mapVariables from './base/map_variables.js';
-
-function secondsToHoursAndMinutesString(seconds) {
-  const minutes = Math.floor(seconds / 60) % 60;
-  const hours = Math.floor(seconds / 3600);
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  } else {
-    return `${minutes}m`;
-  }
-}
-
-function secondsToDecimalHoursString(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  return `${(minutes / 60).toFixed(1)}h`;
-}
+import { secondsToHoursAndMinutesString, secondsToDecimalHoursString } from './time_format.js';
 
 function formatTimeString(seconds) {
   return `${secondsToHoursAndMinutesString(seconds)} (${secondsToDecimalHoursString(seconds)})`;
