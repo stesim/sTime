@@ -1,10 +1,10 @@
 // NOTE: bump the static cache version if any of the statically cached resources
 // listed below have been modified, or if entries need to be added or removed
-const staticCacheVersion = 2;
+const staticCacheVersion = 3;
 
 // NOTE: bump the dynamic cache version if any of the resources loaded by the
 // static resources have been modified (e.g. JS or CSS files)
-const dynamicCacheVersion = 2;
+const dynamicCacheVersion = 3;
 
 const staticCacheResources = [
   'src/app.js',
