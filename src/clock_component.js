@@ -6,7 +6,7 @@ import mapVariables from './base/map_variables.js';
 export default class ClockComponent extends Component {
   constructor() {
     super();
-    this._time = new Variable(new Date());
+    this._time = new Variable(new Date(0));
   }
 
   get time() {
