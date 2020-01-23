@@ -1,7 +1,7 @@
 {
   "name": "sTime",
   "short_name": "sTime",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#14141B",
   "theme_color": "#14141B",
