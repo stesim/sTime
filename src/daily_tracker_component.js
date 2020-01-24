@@ -6,6 +6,7 @@ import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
 import { secondsToHoursAndMinutesString, secondsToDecimalHoursString } from './time_format.js';
+import DebugMenuComponent from './debug_menu_component.js';
 
 function formatDate(date) {
   const options = {
@@ -49,6 +50,7 @@ export default class DailyTrackerComponent extends Component {
     });
     this._startTime = new Variable(null);
     this._totalSeconds = new Variable(0);
+    this._isDebugMenuVisible = new Variable(false);
   }
 
   get _activeTask() {
@@ -171,6 +173,42 @@ export default class DailyTrackerComponent extends Component {
           cursor: 'pointer',
           border: '0.1em solid #14141b',
         },
+      }, {
+        type: 'div',
+        innerText: '↯',
+        style: {
+          position: 'absolute',
+          right: '0.5em',
+          bottom: '4em',
+          width: '1.5em',
+          height: '1.5em',
+          lineHeight: '1.5em',
+          fontSize: '1.25em',
+          textAlign: 'center',
+          color: '#555577',
+          borderRadius: '1.5em',
+          border: '0.2em solid #555577',
+          cursor: 'pointer',
+        },
+        onclick: () => {
+          this._isDebugMenuVisible.value = true;
+        },
+      }, {
+        type: 'div',
+        style: mapVariables([this._isDebugMenuVisible], () => ({
+          display: (this._isDebugMenuVisible.value ? '' : 'none'),
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          opacity: 0.75,
+          backgroundColor: '#000000',
+        })),
+        children: [{
+          type: DebugMenuComponent,
+          closeAction: () => {
+            this._isDebugMenuVisible.value = false;
+          }
+        }],
       }],
     });
   }

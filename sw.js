@@ -1,10 +1,10 @@
 // NOTE: bump the static cache version if any of the statically cached resources
 // listed below have been modified, or if entries need to be added or removed
-const staticCacheVersion = 3;
+const staticCacheVersion = 4;
 
 // NOTE: bump the dynamic cache version if any of the resources loaded by the
 // static resources have been modified (e.g. JS or CSS files)
-const dynamicCacheVersion = 4;
+const dynamicCacheVersion = 5;
 
 const staticCacheResources = [
   'src/app.js',
@@ -43,4 +43,16 @@ self.addEventListener('fetch', (event) => {
       });
     }));
   }));
+});
+
+self.addEventListener('message', (evt) => {
+  console.debug(`received ${evt.data} message`);
+  // const client = evt.source;
+  switch (evt.data) {
+    case 'clear-cache':
+      console.debug('clearing caches...');
+      caches.keys().then((keys) => {
+        keys.forEach((key) => caches.delete(key));
+      });
+  }
 });
