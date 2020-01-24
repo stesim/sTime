@@ -12,3 +12,10 @@ export function secondsToDecimalHoursString(seconds) {
   const minutes = Math.floor(seconds / 60);
   return `${(minutes / 60).toFixed(1)}h`;
 }
+
+export function dateToHoursMinutesString(date) {
+  return date.toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

@@ -5,7 +5,7 @@ import Variable from './base/variable.js';
 import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
-import { secondsToHoursAndMinutesString, secondsToDecimalHoursString } from './time_format.js';
+import { secondsToHoursAndMinutesString, secondsToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
 import DebugMenuComponent from './debug_menu_component.js';
 
 function formatDate(date) {
@@ -122,7 +122,7 @@ export default class DailyTrackerComponent extends Component {
           label: 'Started',
           content: mapVariables([this._startTime], () => {
             if (this._startTime.value !== null) {
-              return this._startTime.value.toLocaleTimeString('de-DE');
+              return dateToHoursMinutesString(this._startTime.value);
             } else {
               return '--';
             }

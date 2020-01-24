@@ -41,6 +41,7 @@ export default class TaskListComponent extends Component {
         type: TimeTicketComponent,
         name: task.name,
         elapsedSeconds: task.elapsedSeconds,
+        creationTime: task.creationTime,
         onClick: () => {
           this._activeTask.value = index;
         },

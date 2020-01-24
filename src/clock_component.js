@@ -6,7 +6,7 @@ import mapVariables from './base/map_variables.js';
 export default class ClockComponent extends Component {
   constructor() {
     super();
-    this._time = new Variable(new Date(0));
+    this._time = new Variable(null);
   }
 
   get time() {
@@ -20,7 +20,12 @@ export default class ClockComponent extends Component {
   $render() {
     return render({
       type: 'div',
-      innerText: mapVariables([this._time], () => this.time.toLocaleTimeString('de-DE')),
+      innerText: mapVariables([this._time], () => {
+        if (this.time !== null) {
+          return this.time.toLocaleTimeString('de-DE');
+        }
+        return '--:--:--';
+      }),
     });
   }
 }
