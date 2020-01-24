@@ -17,6 +17,8 @@ const staticCacheName = `static-cache-v${staticCacheVersion}`;
 const dynamicCacheName = `dynamic-cache-v${dynamicCacheVersion}`;
 
 self.addEventListener('install', (event) => {
+  // TODO(stesim): remove skipWaiting()
+  self.skipWaiting();
   event.waitUntil(
     caches.open(staticCacheName).then((cache) => {
       cache.addAll(staticCacheResources);
