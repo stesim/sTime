@@ -5,18 +5,26 @@ export default class DebugMenuComponent extends Component {
   constructor() {
     super();
     this.closeAction = undefined;
-    this._activeServiceWorker = undefined;
+    this._serviceWorker = undefined;
     navigator.serviceWorker.ready.then((registration) => {
-      this._activeServiceWorker = registration.active;
+      this._serviceWorker = registration;
     });
     this._actions = [{
       name: 'Clear cache',
       action: () => {
-        if (this._activeServiceWorker) {
-          this._activeServiceWorker.postMessage('clear-cache');
-          console.debug('sent clear-cache message');
+        if (this._serviceWorker.active) {
+          this._serviceWorker.active.postMessage('clear-cache');
         } else {
           alert('No active ServiceWorker registration');
+        }
+      }
+    }, {
+      name: 'Activate update',
+      action: () => {
+        if (this._serviceWorker.waiting) {
+          this._serviceWorker.waiting.postMessage('skip-waiting');
+        } else {
+          alert('No waiting ServiceWorker registration');
         }
       }
     }, {

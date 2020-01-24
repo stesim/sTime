@@ -1,11 +1,8 @@
 html, body {
   height: 100%;
-}
-
-body {
+  overflow: hidden;
   background-color: #14141b;
   color: #efefef;
   padding: 0;
   margin: 0;
-  overflow: hidden;
 }
