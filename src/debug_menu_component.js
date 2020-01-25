@@ -2,36 +2,21 @@ import Component from './base/component.js';
 import render from './base/render.js';
 
 export default class DebugMenuComponent extends Component {
-  constructor() {
+  constructor(dataModel, communicationEndpoint) {
     super();
+    this._data = dataModel;
+    this._comm = communicationEndpoint;
+
     this.closeAction = undefined;
-    this._serviceWorker = undefined;
-    navigator.serviceWorker.ready.then((registration) => {
-      this._serviceWorker = registration;
-    });
     this._actions = [{
       name: 'Clear cache',
-      action: () => {
-        if (this._serviceWorker.active) {
-          this._serviceWorker.active.postMessage('clear-cache');
-        } else {
-          alert('No active ServiceWorker registration');
-        }
-      }
+      action: () => this._comm.publish({type: 'clear-cache'}),
     }, {
       name: 'Activate update',
-      action: () => {
-        if (this._serviceWorker.waiting) {
-          this._serviceWorker.waiting.postMessage('skip-waiting');
-        } else {
-          alert('No waiting ServiceWorker registration');
-        }
-      }
+      action: () => this._comm.publish({type: 'activate-update'}),
     }, {
       name: 'Close',
-      action: () => {
-        this._close();
-      }
+      action: () => this._close(),
     }];
   }
 

@@ -6,7 +6,6 @@ import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
 import { secondsToHoursAndMinutesString, secondsToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
-import DebugMenuComponent from './debug_menu_component.js';
 import { addDataModelListener } from './base/data_model.js';
 
 function formatDate(date) {
@@ -23,9 +22,11 @@ function formatTimeString(seconds) {
 }
 
 export default class DailyTrackerComponent extends Component {
-  constructor(dataModel, communicationEndpoint) {
+  constructor(dataModel, communicationEndpoint, debugMenu) {
     super();
-    this._tasks = new Variable([]);
+    this._data = dataModel;
+    this._comm = communicationEndpoint;
+
     this._time = new Variable(new Date());
     this._clockInterval = setInterval(() => {
       if (!document.hidden) {
@@ -41,25 +42,23 @@ export default class DailyTrackerComponent extends Component {
     this._lastUpdateTime = null;
 
     this._listComponent = new TaskListComponent();
-    this._listComponent.tasks = this._tasks.value;
+    this._listComponent.tasks = this._data.tasks;
     this._listComponent.onActiveTaskChanged = (taskIndex) => {
       this._flushElapsedTime();
       this._activeTaskIndex = taskIndex;
     };
-    this._tasks.onChange((newTasks) => {
-      this._listComponent.tasks = newTasks;
-    });
     this._startTime = new Variable(null);
     this._totalSeconds = new Variable(0);
     this._isDebugMenuVisible = new Variable(false);
-
-    this._data = dataModel;
-    this._comm = communicationEndpoint;
+    this._debugMenu = debugMenu;
+    this._debugMenu.closeAction = () => {
+      this._isDebugMenuVisible.value = false;
+    };
 
     addDataModelListener(this._data, (key, value) => {
       if (key === 'tasks') {
-        this._tasks.value = value;
-        this._listComponent.activeTaskIndex = (this._tasks.value.length - 1);
+        this._listComponent.tasks = value;
+        this._listComponent.activeTaskIndex = (this._data.tasks.length - 1);
 
         if (this._startTime.value === null) {
           this._startTime.value = new Date();
@@ -70,7 +69,7 @@ export default class DailyTrackerComponent extends Component {
 
   get _activeTask() {
     const index = this._activeTaskIndex;
-    return (index !== null ? this._tasks.value[index] : null);
+    return (index !== null ? this._data.tasks[index] : null);
   }
 
   _flushElapsedTime() {
@@ -81,7 +80,7 @@ export default class DailyTrackerComponent extends Component {
       this._activeTask.elapsedSeconds.value += deltaSeconds;
       // this._activeTask.elapsedSeconds.value += deltaSeconds * 60;
 
-      this._totalSeconds.value = this._tasks.value.reduce((accumulator, currentValue) => {
+      this._totalSeconds.value = this._data.tasks.reduce((accumulator, currentValue) => {
         return (accumulator + currentValue.elapsedSeconds.value);
       }, 0);
     }
@@ -214,12 +213,7 @@ export default class DailyTrackerComponent extends Component {
           opacity: 0.75,
           backgroundColor: '#000000',
         })),
-        children: [{
-          type: DebugMenuComponent,
-          closeAction: () => {
-            this._isDebugMenuVisible.value = false;
-          }
-        }],
+        children: [this._debugMenu],
       }],
     });
   }
