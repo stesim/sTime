@@ -1,5 +1,8 @@
 import Component from './base/component.js';
 import render from './base/render.js';
+import Variable from './base/variable.js';
+import { addDataModelListener } from './base/data_model.js';
+import mapVariables from './base/map_variables.js';
 
 export default class DebugMenuComponent extends Component {
   constructor(dataModel, communicationEndpoint) {
@@ -8,12 +11,24 @@ export default class DebugMenuComponent extends Component {
     this._comm = communicationEndpoint;
 
     this.closeAction = undefined;
+
+    this._activateUpdateVisible = new Variable(this._data.updateWaiting);
+    addDataModelListener(this._data, (key, value) => {
+      if (key === 'updateWaiting') {
+        this._activateUpdateVisible.value = value;
+      }
+    });
     this._actions = [{
-      name: 'Clear cache',
-      action: () => this._comm.publish({type: 'clear-cache'}),
-    }, {
       name: 'Activate update',
       action: () => this._comm.publish({type: 'activate-update'}),
+      style: {
+        display: mapVariables([this._activateUpdateVisible], () => {
+          return (this._activateUpdateVisible.value ? '' : 'none');
+        }),
+      },
+    }, {
+      name: 'Clear cache',
+      action: () => this._comm.publish({type: 'clear-cache'}),
     }, {
       name: 'Close',
       action: () => this._close(),
@@ -52,6 +67,7 @@ export default class DebugMenuComponent extends Component {
           textAlign: 'center',
           padding: '1em',
           marginBottom: '0.5em',
+          ...entry.style,
         },
       })),
     });

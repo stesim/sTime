@@ -1,18 +1,9 @@
 import DailyTrackerComponent from './daily_tracker_component.js';
-import { createDataModel } from './base/data_model.js';
 import CommunicationChannel from './base/communication_channel.js';
 import DomainController from './domain_controller.js';
 import DebugMenuComponent from './debug_menu_component.js';
+import dataModel from './app_data_model.js';
 
-const dataModel = createDataModel('sTime', {
-  sys: {
-    version: 1,
-    initTime: Date.now(),
-  },
-  app: {
-    tasks: [],
-  }
-});
 window.dataModel = dataModel;
 
 const communicationChannel = new CommunicationChannel();

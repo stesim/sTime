@@ -7,7 +7,32 @@ export default class DomainController {
     this._serviceWorker = undefined;
     navigator.serviceWorker.ready.then((registration) => {
       this._serviceWorker = registration;
+      this._checkForWaitingUpdate();
     });
+  }
+
+  _checkForWaitingUpdate() {
+    const setUpdateIsWaiting = () => {
+      this._data.sys.updateWaiting = true;
+    };
+
+    const registration = this._serviceWorker;
+    if (registration.waiting) {
+      setUpdateIsWaiting();
+    } else {
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker.state === 'installed') {
+          setUpdateIsWaiting();
+        } else {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed') {
+              setUpdateIsWaiting();
+            }
+          });
+        }
+      });
+    }
   }
 
   _handleMessage(message) {
@@ -28,7 +53,7 @@ export default class DomainController {
     if (this._serviceWorker.waiting) {
       this._serviceWorker.waiting.postMessage('skip-waiting');
     } else {
-      alert('No waiting ServiceWorker registration');
+      console.error('No waiting ServiceWorker registration');
     }
   }
 
