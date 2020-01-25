@@ -82,7 +82,7 @@ export default class TimeTicketComponent extends Component {
         },
         innerText: mapVariables([this._creationTime], () => {
           if (this._creationTime.value !== null) {
-            return dateToHoursMinutesString(this._creationTime.value);
+            return dateToHoursMinutesString(new Date(this._creationTime.value));
           }
           return '--:--';
         }),

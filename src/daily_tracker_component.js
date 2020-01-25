@@ -158,7 +158,7 @@ export default class DailyTrackerComponent extends Component {
         onclick: () => {
           const name = prompt('Enter task name', '');
           const elapsedSeconds = new Variable(0);
-          const creationTime = new Date();
+          const creationTime = Date.now();
           if (name !== null && name !== '') {
             this._comm.publish({
               type: 'add-task',
