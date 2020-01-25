@@ -8,9 +8,9 @@ export default class TaskListComponent extends Component {
   constructor() {
     super();
     this._tasks = new Variable([]);
-    this._activeTask = new Variable(null);
+    this._activeTaskIndex = new Variable(null);
     this.onActiveTaskChanged = undefined;
-    this._activeTask.onChange((value) => {
+    this._activeTaskIndex.onChange((value) => {
       if (this.onActiveTaskChanged) {
         this.onActiveTaskChanged(value);
       }
@@ -23,15 +23,15 @@ export default class TaskListComponent extends Component {
 
   set tasks(value) {
     this._tasks.value = value;
-    this._activeTask.value = null;
+    this._activeTaskIndex.value = null;
   }
 
-  get activeTask() {
-    return this._activeTask.value;
+  get activeTaskIndex() {
+    return this._activeTaskIndex.value;
   }
 
-  set activeTask(value) {
-    this._activeTask.value = value;
+  set activeTaskIndex(value) {
+    this._activeTaskIndex.value = value;
   }
 
   $render() {
@@ -43,10 +43,10 @@ export default class TaskListComponent extends Component {
         elapsedSeconds: task.elapsedSeconds,
         creationTime: task.creationTime,
         onClick: () => {
-          this._activeTask.value = index;
+          this._activeTaskIndex.value = index;
         },
-        style: mapVariables([this._activeTask], () => ({
-          backgroundColor: (index === this._activeTask.value ? '#557755' : '#555577'),
+        style: mapVariables([this._activeTaskIndex], () => ({
+          backgroundColor: (index === this._activeTaskIndex.value ? '#557755' : '#555577'),
           marginBottom: '0.5em',
         })),
       }))),

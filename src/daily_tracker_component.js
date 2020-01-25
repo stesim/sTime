@@ -7,6 +7,7 @@ import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
 import { secondsToHoursAndMinutesString, secondsToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
 import DebugMenuComponent from './debug_menu_component.js';
+import { addDataModelListener } from './base/data_model.js';
 
 function formatDate(date) {
   const options = {
@@ -22,7 +23,7 @@ function formatTimeString(seconds) {
 }
 
 export default class DailyTrackerComponent extends Component {
-  constructor() {
+  constructor(dataModel, communicationEndpoint) {
     super();
     this._tasks = new Variable([]);
     this._time = new Variable(new Date());
@@ -51,6 +52,20 @@ export default class DailyTrackerComponent extends Component {
     this._startTime = new Variable(null);
     this._totalSeconds = new Variable(0);
     this._isDebugMenuVisible = new Variable(false);
+
+    this._data = dataModel;
+    this._comm = communicationEndpoint;
+
+    addDataModelListener(this._data, (key, value) => {
+      if (key === 'tasks') {
+        this._tasks.value = value;
+        this._listComponent.activeTaskIndex = (this._tasks.value.length - 1);
+
+        if (this._startTime.value === null) {
+          this._startTime.value = new Date();
+        }
+      }
+    });
   }
 
   get _activeTask() {
@@ -146,14 +161,10 @@ export default class DailyTrackerComponent extends Component {
           const elapsedSeconds = new Variable(0);
           const creationTime = new Date();
           if (name !== null && name !== '') {
-            this._tasks.value = [
-              ...this._tasks.value,
-              {name, elapsedSeconds, creationTime}];
-            this._listComponent.activeTask = (this._tasks.value.length - 1);
-
-            if (this._startTime.value === null) {
-              this._startTime.value = new Date();
-            }
+            this._comm.publish({
+              type: 'add-task',
+              task: {name, elapsedSeconds, creationTime},
+            });
           }
         },
         style: {
