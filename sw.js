@@ -29,7 +29,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(keys
         .filter((key) => (key !== staticCacheName && key !== dynamicCacheName))
-        .forEach((key) => caches.delete(key)));
+        .map((key) => caches.delete(key)));
     })
   );
 });
