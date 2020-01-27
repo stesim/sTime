@@ -90,7 +90,7 @@ export default class DailyTrackerComponent extends Component {
         },
         children: [{
           type: 'div',
-          innerText: formatDate(new Date()),
+          textContent: formatDate(new Date()),
           style: {
             fontSize: '1.25em',
             fontWeight: 'bold',
@@ -144,7 +144,7 @@ export default class DailyTrackerComponent extends Component {
         }],
       }, {
         type: 'div',
-        innerText: '+',
+        textContent: '+',
         onclick: () => {
           const name = prompt('Enter task name', '');
           if (name) {
@@ -173,7 +173,7 @@ export default class DailyTrackerComponent extends Component {
         },
       }, {
         type: 'div',
-        innerText: '↯',
+        textContent: '↯',
         style: {
           position: 'absolute',
           right: '0.5em',

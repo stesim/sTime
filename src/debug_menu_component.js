@@ -57,7 +57,7 @@ export default class DebugMenuComponent extends Component {
       },
       children: this._actions.map((entry) => ({
         type: 'div',
-        innerText: entry.name,
+        textContent: entry.name,
         onclick: (evt) => {
           entry.action();
           evt.stopPropagation();

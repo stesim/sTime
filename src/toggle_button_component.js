@@ -53,7 +53,7 @@ export default class ToggleButtonComponent extends Component {
   $render() {
     return render({
       type: 'button',
-      innerText: mapVariables([this._active, this._activeContent, this._inactiveContent], () => {
+      textContent: mapVariables([this._active, this._activeContent, this._inactiveContent], () => {
         return this._active.value ? this._activeContent.value : this._inactiveContent.value;
       }),
       onclick: () => {

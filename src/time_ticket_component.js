@@ -70,7 +70,7 @@ export default class TimeTicketComponent extends Component {
       })),
       children: [{
         type: 'span',
-        innerText: this._ticketName,
+        textContent: this._ticketName,
         style: {
           fontSize: '1.5em',
           fontWeight: 'bold',
@@ -80,7 +80,7 @@ export default class TimeTicketComponent extends Component {
         style: {
           textAlign: 'right',
         },
-        innerText: mapVariables([this._creationTime], () => {
+        textContent: mapVariables([this._creationTime], () => {
           if (this._creationTime.value !== null) {
             return dateToHoursMinutesString(new Date(this._creationTime.value));
           }
@@ -88,7 +88,7 @@ export default class TimeTicketComponent extends Component {
         }),
       }, {
         type: 'span',
-        innerText: mapVariables([this._activeTime], () => {
+        textContent: mapVariables([this._activeTime], () => {
           return `${formatTimeString(this._activeTime.value)}`
         }),
       }],

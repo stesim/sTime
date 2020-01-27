@@ -30,14 +30,14 @@ export default class LabeledTextComponent extends Component {
       type: 'span',
       children: [{
         type: 'div',
-        innerText: this._label,
+        textContent: this._label,
         style: {
           textTransform: 'uppercase',
           fontWeight: 'bold',
         }
       }, {
         type: 'div',
-        innerText: this._content,
+        textContent: this._content,
       }],
     });
   }
