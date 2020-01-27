@@ -63,14 +63,17 @@ export default class DomComponent extends Component {
   }
 
   $render() {
-    this._renderChildren();
-    this._rendered = true;
+    if (!this._rendered) {
+      this._renderChildren();
+      this._rendered = true;
+    }
     return this._domNode;
   }
 
   _renderChildren() {
     for (const child of this._children) {
-      this._domNode.appendChild(child.$render());
+      const renderedChild = child.$render();
+      this._domNode.appendChild(renderedChild);
     }
   }
 
