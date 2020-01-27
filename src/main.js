@@ -7,10 +7,19 @@ import dataModel from './app_data_model.js';
 window.dataModel = dataModel;
 
 const communicationChannel = new CommunicationChannel();
-window.domainController = new DomainController(dataModel, communicationChannel.endpoint1);
+const domainController = new DomainController(
+  dataModel,
+  communicationChannel.endpoint1);
 
-window.dailyTracker = new DailyTrackerComponent(
+const dailyTracker = new DailyTrackerComponent(
   dataModel.app,
   communicationChannel.endpoint2,
   new DebugMenuComponent(dataModel.sys, communicationChannel.endpoint2));
-document.body.appendChild(window.dailyTracker.$render());
+document.body.appendChild(dailyTracker.$render());
+
+window.sTime = {
+  dataModel,
+  communicationChannel,
+  domainController,
+  dailyTracker,
+}
