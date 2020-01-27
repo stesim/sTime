@@ -4,7 +4,11 @@ function notImplementedHandler() {
 
 export default class Component {
   setProperty(name, value) {
-    this[name] = value;
+    if (name in this) {
+      this[name] = value;
+    } else {
+      throw new TypeError(`cannot assign non-existing property: ${name}`);
+    }
   }
 
   $render() {

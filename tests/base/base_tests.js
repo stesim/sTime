@@ -1,11 +1,22 @@
 import { assertDomStructure, runDomTest, CallbackTester, assertEqual } from '../testing.js';
 import DomComponent from '../../src/base/dom_component.js';
+import render from '../../src/base/render.js';
 
 runDomTest('DomComponent nodeName', () => {
   const component = new DomComponent('div');
   const componentDom = component.$render();
   assertDomStructure(componentDom, {
     nodeName: 'div',
+  });
+});
+
+runDomTest('DomComponent textContent', () => {
+  const component = new DomComponent('div');
+  component.setProperty('textContent', 'foo');
+  const componentDom = component.$render();
+  assertDomStructure(componentDom, {
+    nodeName: 'div',
+    textContent: 'foo',
   });
 });
 
@@ -81,4 +92,44 @@ runDomTest('DomComponent event listener', () => {
   });
   componentDom.click();
   assertEqual(callbackTester.calls.length, 1, 'wrong call count of event listener');
+});
+
+runDomTest('render() single component', () => {
+  const rendererInput = {
+    type: 'div',
+  };
+  const expectedDomStructure = {
+    nodeName: 'div',
+  };
+  assertDomStructure(render(rendererInput), expectedDomStructure);
+});
+
+runDomTest('render() component hierarchy', () => {
+  const rendererInput = {
+    type: 'div',
+    children: [{
+      type: 'h1',
+    }, {
+      type: 'h2',
+    }],
+  };
+  const expectedDomStructure = {
+    nodeName: 'div',
+  };
+  assertDomStructure(render(rendererInput), expectedDomStructure);
+});
+
+runDomTest('render() component hierarchy with existing component', () => {
+  const rendererInput = {
+    type: 'div',
+    children: [
+      new DomComponent('h1'),
+    {
+      type: 'h2',
+    }],
+  };
+  const expectedDomStructure = {
+    nodeName: 'div',
+  };
+  assertDomStructure(render(rendererInput), expectedDomStructure);
 });
