@@ -14,12 +14,15 @@ function renderToComponent(tree) {
 
   const instance = createComponentInstance(tree.type);
   for (const propertyName in tree) {
+    const propertyValue = tree[propertyName];
     if (propertyName === 'children') {
-      mapVariableOrValue(tree.children, actualValue => {
+      mapVariableOrValue(instance, propertyValue, actualValue => {
         instance.children = actualValue.map(subtree => renderToComponent(subtree));
       });
     } else if (propertyName !== 'type') {
-      initializeComponentProperty(instance, propertyName, tree[propertyName]);
+      mapVariableOrValue(instance, propertyValue, actualValue => {
+        instance.setProperty(propertyName, actualValue);
+      });
     }
   }
   return instance;
@@ -33,17 +36,11 @@ function createComponentInstance(type) {
   }
 }
 
-function initializeComponentProperty(component, name, value) {
-  mapVariableOrValue(value, actualValue => {
-    component.setProperty(name, actualValue);
-  });
-}
-
-function mapVariableOrValue(value, operation) {
-  let currentValue = value;
+function mapVariableOrValue(component, value, operation) {
   if (value instanceof Variable) {
-    currentValue = value.value;
-    value.onChange(newValue => operation(newValue));
+    operation(value.value);
+    component.addVariableListener(value, operation);
+  } else {
+    operation(value);
   }
-  operation(currentValue);
 }

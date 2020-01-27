@@ -36,6 +36,7 @@ export default class DomComponent extends Component {
 
   set children(value) {
     if (this._rendered) {
+      this._detachChildren();
       this._removeDomChildren();
     }
     this._children = value;
@@ -75,6 +76,10 @@ export default class DomComponent extends Component {
       const renderedChild = child.$render();
       this._domNode.appendChild(renderedChild);
     }
+  }
+
+  _detachChildren() {
+    this._children.forEach(child => child.$detach());
   }
 
   _removeDomChildren() {
