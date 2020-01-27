@@ -2,17 +2,17 @@ import Component from './base/component.js';
 import Variable from './base/variable.js';
 import render from './base/render.js';
 import mapVariables from './base/map_variables.js';
-import { secondsToHoursAndMinutesString, secondsToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
+import { timeToHoursAndMinutesString, timeToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
 
-function formatTimeString(seconds) {
-  return `${secondsToHoursAndMinutesString(seconds)} (${secondsToDecimalHoursString(seconds)})`;
+function formatTimeString(time) {
+  return `${timeToHoursAndMinutesString(time)} (${timeToDecimalHoursString(time)})`;
 }
 
 export default class TimeTicketComponent extends Component {
   constructor() {
     super();
     this._ticketName = new Variable('unnamed');
-    this._elapsedSeconds = new Variable(0);
+    this._activeTime = new Variable(0);
     this.onClick = undefined;
     this._style = new Variable({});
     this._creationTime = new Variable(null);
@@ -26,12 +26,12 @@ export default class TimeTicketComponent extends Component {
     this._ticketName.value = value;
   }
 
-  get elapsedSeconds() {
-    return this._elapsedSeconds.value;
+  get activeTime() {
+    return this._activeTime.value;
   }
 
-  set elapsedSeconds(value) {
-    this._elapsedSeconds.value = value;
+  set activeTime(value) {
+    this._activeTime.value = value;
   }
 
   get creationTime() {
@@ -88,8 +88,8 @@ export default class TimeTicketComponent extends Component {
         }),
       }, {
         type: 'span',
-        innerText: mapVariables([this._elapsedSeconds], () => {
-          return `${formatTimeString(this._elapsedSeconds.value)}`
+        innerText: mapVariables([this._activeTime], () => {
+          return `${formatTimeString(this._activeTime.value)}`
         }),
       }],
     });

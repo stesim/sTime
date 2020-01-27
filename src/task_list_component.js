@@ -9,12 +9,7 @@ export default class TaskListComponent extends Component {
     super();
     this._tasks = new Variable([]);
     this._activeTaskIndex = new Variable(null);
-    this.onActiveTaskChanged = undefined;
-    this._activeTaskIndex.onChange((value) => {
-      if (this.onActiveTaskChanged) {
-        this.onActiveTaskChanged(value);
-      }
-    });
+    this.onTaskClicked = undefined;
   }
 
   get tasks() {
@@ -40,10 +35,12 @@ export default class TaskListComponent extends Component {
       children: mapVariables([this._tasks], () => this._tasks.value.map((task, index) => ({
         type: TimeTicketComponent,
         name: task.name,
-        elapsedSeconds: task.elapsedSeconds,
+        activeTime: task.activeTime,
         creationTime: task.creationTime,
         onClick: () => {
-          this._activeTaskIndex.value = index;
+          if (this.onTaskClicked) {
+            this.onTaskClicked(index);
+          }
         },
         style: mapVariables([this._activeTaskIndex], () => ({
           backgroundColor: (index === this._activeTaskIndex.value ? '#557755' : '#555577'),

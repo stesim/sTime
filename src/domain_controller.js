@@ -9,6 +9,18 @@ export default class DomainController {
       this._serviceWorker = registration;
       this._checkForWaitingUpdate();
     });
+
+    this._supportedMessageActions = {
+      'activate-update' : (message) => this._activateUpdate(),
+      'add-task'        : (message) => this._addTask(message.taskName),
+      'clear-cache'     : (message) => this._clearCache(),
+      'set-active-task' : (message) => this._addTaskSwitch(message.taskIndex),
+    };
+
+    this._previousUpdateTime = 0;
+    this._updateInterval = setInterval(() => {
+      this._updateActiveTaskTime();
+    }, 10000);
   }
 
   _checkForWaitingUpdate() {
@@ -36,14 +48,9 @@ export default class DomainController {
   }
 
   _handleMessage(message) {
-    const supportedActions = {
-      'activate-update': () => this._activateUpdate(),
-      'add-task': () => this._addTask(message.task),
-      'clear-cache': () => this._clearCache(),
-    };
-    const action = supportedActions[message.type];
+    const action = this._supportedMessageActions[message.type];
     if (action !== undefined) {
-      action();
+      action(message);
     } else {
       console.error('LogicController received unsupported message:', message)
     }
@@ -57,9 +64,15 @@ export default class DomainController {
     }
   }
 
-  _addTask(task) {
+  _addTask(name) {
+    const task = {
+      name,
+      activeTime: 0,
+      creationTime: Date.now(),
+    };
     // this._data.app.tasks.push(task);
     this._data.app.tasks = [...this._data.app.tasks, task];
+    this._addTaskSwitch(this._data.app.tasks.length - 1, task.creationTime);
   }
 
   _clearCache() {
@@ -68,5 +81,38 @@ export default class DomainController {
     } else {
       alert('No active ServiceWorker registration');
     }
+  }
+
+  get _activeTaskIndex() {
+    const taskSwitches = this._data.app.taskSwitches;
+    if (taskSwitches.length > 0) {
+      return taskSwitches[taskSwitches.length - 1].taskIndex;
+    }
+    return null;
+  }
+
+  get _activeTask() {
+    const taskIndex = this._activeTaskIndex;
+    return (taskIndex !== null ? this._data.app.tasks[taskIndex] : null);
+  }
+
+  _addTaskSwitch(taskIndex, time = Date.now()) {
+    if (taskIndex === this._activeTaskIndex) {
+      return;
+    }
+
+    this._updateActiveTaskTime(time);
+
+    const switchEntry = {taskIndex, time};
+    this._data.app.taskSwitches = [...this._data.app.taskSwitches, switchEntry];
+  }
+
+  _updateActiveTaskTime(now = Date.now()) {
+    const activeTask = this._activeTask;
+    if (activeTask !== null) {
+      const timeSincePreviousSwitch = (now - this._previousUpdateTime);
+      activeTask.activeTime += timeSincePreviousSwitch;
+    }
+    this._previousUpdateTime = now;
   }
 }

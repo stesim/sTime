@@ -8,6 +8,7 @@ const dataModel = createDataModel('sTime', {
   },
   app: {
     tasks: [],
+    taskSwitches: [],
   }
 });
 

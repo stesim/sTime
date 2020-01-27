@@ -5,7 +5,7 @@ import Variable from './base/variable.js';
 import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
-import { secondsToHoursAndMinutesString, secondsToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
+import { timeToHoursAndMinutesString, timeToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
 import { addDataModelListener } from './base/data_model.js';
 
 function formatDate(date) {
@@ -17,8 +17,8 @@ function formatDate(date) {
   return date.toLocaleDateString('en-US', options);
 }
 
-function formatTimeString(seconds) {
-  return `${secondsToHoursAndMinutesString(seconds)} (${secondsToDecimalHoursString(seconds)})`;
+function formatTimeString(time) {
+  return `${timeToHoursAndMinutesString(time)} (${timeToDecimalHoursString(time)})`;
 }
 
 export default class DailyTrackerComponent extends Component {
@@ -27,28 +27,11 @@ export default class DailyTrackerComponent extends Component {
     this._data = dataModel;
     this._comm = communicationEndpoint;
 
-    this._time = new Variable(new Date());
-    this._clockInterval = setInterval(() => {
-      if (!document.hidden) {
-        this._time.value = new Date();
-      }
-    }, 1000);
-    this._flushInterval = setInterval(() => {
-      if (!document.hidden && this._activeTask !== null) {
-        this._flushElapsedTime();
-      }
-    }, 10000)
-    this._activeTaskIndex = null;
-    this._lastUpdateTime = null;
+    this._tasks = new Variable([]);
+    this._activeTaskIndex = new Variable(null);
 
-    this._listComponent = new TaskListComponent();
-    this._listComponent.tasks = this._data.tasks;
-    this._listComponent.onActiveTaskChanged = (taskIndex) => {
-      this._flushElapsedTime();
-      this._activeTaskIndex = taskIndex;
-    };
     this._startTime = new Variable(null);
-    this._totalSeconds = new Variable(0);
+    this._totalTime = new Variable(0);
     this._isDebugMenuVisible = new Variable(false);
     this._debugMenu = debugMenu;
     this._debugMenu.closeAction = () => {
@@ -56,35 +39,37 @@ export default class DailyTrackerComponent extends Component {
     };
 
     addDataModelListener(this._data, (key, value) => {
-      if (key === 'tasks') {
-        this._listComponent.tasks = value;
-        this._listComponent.activeTaskIndex = (this._data.tasks.length - 1);
-
-        if (this._startTime.value === null) {
-          this._startTime.value = new Date();
-        }
+      switch (key) {
+        case 'tasks':
+          this._tasks.value = value.map(task => ({
+            ...task,
+            activeTime: new Variable(task.activeTime),
+          }));
+          break;
+        case 'taskSwitches':
+          const taskSwitches = value;
+          if (this._startTime.value === null) {
+            const firstSwitch = taskSwitches[0];
+            this._startTime.value = new Date(firstSwitch.time);
+          }
+          const lastSwitch = taskSwitches[taskSwitches.length - 1];
+          this._activeTaskIndex.value = lastSwitch.taskIndex;
+          this._pollTasks();
+          break;
       }
     });
+
+    // FIXME(stesim): replace polling with proper notifications
+    this._pollInterval = setInterval(() => this._pollTasks(), 10000);
   }
 
-  get _activeTask() {
-    const index = this._activeTaskIndex;
-    return (index !== null ? this._data.tasks[index] : null);
-  }
-
-  _flushElapsedTime() {
-    const now = new Date();
-    if (this._activeTask !== null) {
-      const deltaMilliseconds = (now.valueOf() - this._lastUpdateTime.valueOf());
-      const deltaSeconds = (deltaMilliseconds / 1000);
-      this._activeTask.elapsedSeconds.value += deltaSeconds;
-      // this._activeTask.elapsedSeconds.value += deltaSeconds * 60;
-
-      this._totalSeconds.value = this._data.tasks.reduce((accumulator, currentValue) => {
-        return (accumulator + currentValue.elapsedSeconds.value);
-      }, 0);
-    }
-    this._lastUpdateTime = now;
+  _pollTasks() {
+    let totalSeconds = 0;
+    this._data.tasks.forEach((task, index) => {
+      this._tasks.value[index].activeTime.value = task.activeTime;
+      totalSeconds += task.activeTime;
+    });
+    this._totalTime.value = totalSeconds;
   }
 
   $render() {
@@ -113,7 +98,6 @@ export default class DailyTrackerComponent extends Component {
           },
         }, {
           type: ClockComponent,
-          time: this._time,
         }],
       }, {
         type: 'div',
@@ -121,7 +105,13 @@ export default class DailyTrackerComponent extends Component {
           padding: '0.5em',
           overflow: 'auto',
         },
-        children: [this._listComponent],
+        children: [{
+          type: TaskListComponent,
+          tasks: this._tasks,
+          activeTaskIndex: this._activeTaskIndex,
+          onTaskClicked: taskIndex => this._comm.publish(
+            {type: 'set-active-task', taskIndex}),
+        }],
       }, {
         type: 'div',
         style: {
@@ -149,7 +139,7 @@ export default class DailyTrackerComponent extends Component {
           children: [{
             type: LabeledTextComponent,
             label: 'Summary',
-            content: mapVariables([this._totalSeconds], () => formatTimeString(this._totalSeconds.value)),
+            content: mapVariables([this._totalTime], () => formatTimeString(this._totalTime.value)),
           }],
         }],
       }, {
@@ -157,12 +147,10 @@ export default class DailyTrackerComponent extends Component {
         innerText: '+',
         onclick: () => {
           const name = prompt('Enter task name', '');
-          const elapsedSeconds = new Variable(0);
-          const creationTime = Date.now();
-          if (name !== null && name !== '') {
+          if (name) {
             this._comm.publish({
               type: 'add-task',
-              task: {name, elapsedSeconds, creationTime},
+              taskName: name,
             });
           }
         },
