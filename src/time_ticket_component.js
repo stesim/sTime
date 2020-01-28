@@ -94,7 +94,7 @@ export default class TimeTicketComponent extends Component {
         }),
       }, {
         type: 'div',
-        textContent: '🖉',
+        textContent: '✎',
         onclick: (evt) => {
           if (this.onEditClick) {
             this.onEditClick();
@@ -103,6 +103,7 @@ export default class TimeTicketComponent extends Component {
         },
         style: {
           textAlign: 'center',
+          fontSize: '1.2em',
         },
       }],
     });
