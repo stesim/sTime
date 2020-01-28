@@ -10,6 +10,7 @@ export default class TaskListComponent extends Component {
     this._tasks = new Variable([]);
     this._activeTaskIndex = new Variable(null);
     this.onTaskClicked = undefined;
+    this.onEditTaskClicked = undefined;
   }
 
   get tasks() {
@@ -40,6 +41,11 @@ export default class TaskListComponent extends Component {
         onClick: () => {
           if (this.onTaskClicked) {
             this.onTaskClicked(index);
+          }
+        },
+        onEditClick: () => {
+          if (this.onEditTaskClicked) {
+            this.onEditTaskClicked(index);
           }
         },
         style: mapVariables([this._activeTaskIndex], () => ({

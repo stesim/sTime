@@ -14,6 +14,7 @@ export default class TimeTicketComponent extends Component {
     this._ticketName = new Variable('unnamed');
     this._activeTime = new Variable(0);
     this.onClick = undefined;
+    this.onEditClick = undefined;
     this._style = new Variable({});
     this._creationTime = new Variable(null);
   }
@@ -91,6 +92,18 @@ export default class TimeTicketComponent extends Component {
         textContent: mapVariables([this._activeTime], () => {
           return `${formatTimeString(this._activeTime.value)}`
         }),
+      }, {
+        type: 'div',
+        textContent: '🖉',
+        onclick: (evt) => {
+          if (this.onEditClick) {
+            this.onEditClick();
+          }
+          evt.stopPropagation();
+        },
+        style: {
+          textAlign: 'center',
+        },
       }],
     });
   }

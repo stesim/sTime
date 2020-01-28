@@ -14,6 +14,7 @@ export default class DomainController {
       'activate-update' : (message) => this._activateUpdate(),
       'add-task'        : (message) => this._addTask(message.taskName),
       'clear-cache'     : (message) => this._clearCache(),
+      'rename-task'     : (message) => this._renameTask(message.taskIndex, message.taskName),
       'set-active-task' : (message) => this._addTaskSwitch(message.taskIndex),
     };
 
@@ -114,5 +115,9 @@ export default class DomainController {
       activeTask.activeTime += timeSincePreviousSwitch;
     }
     this._previousUpdateTime = now;
+  }
+
+  _renameTask(index, name) {
+    this._data.app.tasks[index].name = name;
   }
 }

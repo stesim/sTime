@@ -42,7 +42,8 @@ export default class DailyTrackerComponent extends Component {
       switch (key) {
         case 'tasks':
           this._tasks.value = value.map(task => ({
-            ...task,
+            name: new Variable(task.name),
+            creationTime: task.creationTime,
             activeTime: new Variable(task.activeTime),
           }));
           break;
@@ -111,6 +112,20 @@ export default class DailyTrackerComponent extends Component {
           activeTaskIndex: this._activeTaskIndex,
           onTaskClicked: taskIndex => this._comm.publish(
             {type: 'set-active-task', taskIndex}),
+          onEditTaskClicked: taskIndex => {
+            const name = prompt(
+              'Enter new task name',
+              this._data.tasks[taskIndex].name);
+            if (name) {
+              this._comm.publish({
+                type: 'rename-task',
+                taskIndex,
+                taskName: name,
+              });
+            }
+            // FIXME(stesim): HACKY; use notifications instead
+            this._tasks.value[taskIndex].name.value = this._data.tasks[taskIndex].name;
+          },
         }],
       }, {
         type: 'div',
