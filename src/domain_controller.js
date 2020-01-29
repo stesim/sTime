@@ -159,6 +159,9 @@ export default class DomainController {
 
   _renameTask(id, name) {
     const task = this._data.app.tasks.find(task => (task.id === id));
-    task.name = name;
+    this._dataSaver.updateTask({
+      ...task,
+      name
+    });
   }
 }

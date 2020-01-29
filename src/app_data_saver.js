@@ -23,6 +23,21 @@ export default class AppDataSaver {
     );
   }
 
+  updateTask(task) {
+    return this._db.transaction(
+      'tasks',
+      'readwrite',
+      store => {
+        store.put(task).then(() => {
+          this._data.app.tasks = this._data.app.tasks.map(
+            originalTask => (originalTask.id === task.id ? task : originalTask));
+        }).catch((error) => {
+          alert('failed to update task in database', error);
+        });
+      },
+    );
+  }
+
   addTaskSwitch(taskSwitch) {
     return this._db.transaction(
       'taskSwitches',

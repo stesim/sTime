@@ -47,9 +47,7 @@ export default class DailyTrackerComponent extends Component {
       switch (key) {
         case 'tasks':
           this._tasks.value = value.map(task => ({
-            id: task.id,
-            name: new Variable(task.name),
-            creationTime: task.creationTime,
+            ...task,
             activeTime: new Variable(0),
           }));
           this._updateTaskTimes();
@@ -64,9 +62,8 @@ export default class DailyTrackerComponent extends Component {
             const lastSwitch = taskSwitches[taskSwitches.length - 1];
             this._activeTaskIndex.value =
               this._getTaskIndexFromId(lastSwitch.taskId);
-            this._latestPreviewUpdateTime = lastSwitch.time;
-            this._updateTaskTimes();
           }
+          this._updateTaskTimes();
           break;
       }
     });
@@ -87,6 +84,9 @@ export default class DailyTrackerComponent extends Component {
   _updateTaskTimes() {
     const idToTimesMap = new Map();
     const taskSwitches = this._data.taskSwitches;
+    if (taskSwitches.length > 0) {
+      this._latestPreviewUpdateTime = taskSwitches[taskSwitches.length - 1].time;
+    }
     taskSwitches.forEach((taskSwitch, index) => {
       if (index > 0) {
         const previousSwitch = taskSwitches[index - 1];
@@ -176,8 +176,6 @@ export default class DailyTrackerComponent extends Component {
                 taskName: name,
               });
             }
-            // FIXME(stesim): HACKY; use notifications instead
-            this._tasks.value[taskIndex].name.value = this._data.tasks[taskIndex].name;
           },
         }],
       }, {

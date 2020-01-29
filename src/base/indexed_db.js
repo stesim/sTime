@@ -15,6 +15,11 @@ class TransactionStore {
       this._store.add(value, key));
   }
 
+  put(value, key) {
+    return promisifyRequest(
+      this._store.put(value, key));
+  }
+
   getAll(query, count) {
     return promisifyRequest(
       this._store.getAll(query, count));
