@@ -5,7 +5,7 @@ import Variable from './base/variable.js';
 import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
-import { timeToHoursAndMinutesString, timeToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
+import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
 import { addDataModelListener } from './base/data_model.js';
 
 function formatDate(date) {
@@ -18,7 +18,7 @@ function formatDate(date) {
 }
 
 function formatTimeString(time) {
-  return `${timeToHoursAndMinutesString(time)} (${timeToDecimalHoursString(time)})`;
+  return `${timeDurationToHoursAndMinutesString(time)} (${timeDurationToDecimalHoursString(time)})`;
 }
 
 export default class DailyTrackerComponent extends Component {
@@ -32,6 +32,21 @@ export default class DailyTrackerComponent extends Component {
 
     this._startTime = new Variable(null);
     this._totalTime = new Variable(0);
+    this._latestPreviewUpdateTime = Date.now();
+    this._previewTimeUpdateInterval = setInterval(() => {
+      if (this._startTime.value !== null) {
+        this._totalTime.value = (Date.now() - this._startTime.value);
+      }
+      if (this._data.taskSwitches.length > 0) {
+        const activeTaskId = this._getLatestSwitch().taskId;
+        const taskIndex = this._getTaskIndexFromId(activeTaskId);
+        const now = Date.now();
+        this._tasks.value[taskIndex].activeTime.value +=
+          (now - this._latestPreviewUpdateTime);
+        this._latestPreviewUpdateTime = now;
+      }
+    }, 60000);
+
     this._isDebugMenuVisible = new Variable(false);
     this._debugMenu = debugMenu;
     this._debugMenu.closeAction = () => {
@@ -42,35 +57,59 @@ export default class DailyTrackerComponent extends Component {
       switch (key) {
         case 'tasks':
           this._tasks.value = value.map(task => ({
+            id: task.id,
             name: new Variable(task.name),
             creationTime: task.creationTime,
-            activeTime: new Variable(task.activeTime),
+            activeTime: new Variable(0),
           }));
+          this._updateTaskTimes();
           break;
         case 'taskSwitches':
           const taskSwitches = value;
           if (this._startTime.value === null) {
             const firstSwitch = taskSwitches[0];
-            this._startTime.value = new Date(firstSwitch.time);
+            this._startTime.value = firstSwitch.time;
           }
           const lastSwitch = taskSwitches[taskSwitches.length - 1];
-          this._activeTaskIndex.value = lastSwitch.taskIndex;
-          this._pollTasks();
+          this._activeTaskIndex.value =
+            this._getTaskIndexFromId(lastSwitch.taskId);
+          this._updateTaskTimes();
+          this._latestPreviewUpdateTime = lastSwitch.time;
           break;
       }
     });
-
-    // FIXME(stesim): replace polling with proper notifications
-    this._pollInterval = setInterval(() => this._pollTasks(), 10000);
   }
 
-  _pollTasks() {
-    let totalSeconds = 0;
-    this._data.tasks.forEach((task, index) => {
-      this._tasks.value[index].activeTime.value = task.activeTime;
-      totalSeconds += task.activeTime;
+  _getLatestSwitch() {
+    return this._data.taskSwitches[this._data.taskSwitches.length - 1]
+  }
+
+  _getTimeSinceLatestSwitch() {
+    return (Date.now() - this._getLatestSwitch().time);
+  }
+
+  _getTaskIndexFromId(id) {
+    return this._tasks.value.findIndex(task => (task.id == id));
+  }
+
+  _updateTaskTimes() {
+    const idToTimesMap = new Map();
+    const taskSwitches = this._data.taskSwitches;
+    taskSwitches.forEach((taskSwitch, index) => {
+      if (index > 0) {
+        const previousSwitch = taskSwitches[index - 1];
+        const taskId = previousSwitch.taskId;
+        const currentTime = (idToTimesMap.get(taskId) || 0);
+        const timeUntilSwitch = (taskSwitch.time - previousSwitch.time);
+        idToTimesMap.set(taskId, currentTime + timeUntilSwitch);
+      } else {
+        this._startTime.value = taskSwitch.time;
+      }
     });
-    this._totalTime.value = totalSeconds;
+    idToTimesMap.forEach((time, id) => {
+      const taskIndex = this._getTaskIndexFromId(id);
+      this._tasks.value[taskIndex].activeTime.value = time;
+    });
   }
 
   $render() {
@@ -110,16 +149,22 @@ export default class DailyTrackerComponent extends Component {
           type: TaskListComponent,
           tasks: this._tasks,
           activeTaskIndex: this._activeTaskIndex,
-          onTaskClicked: taskIndex => this._comm.publish(
-            {type: 'set-active-task', taskIndex}),
+          onTaskClicked: taskIndex => {
+            const task = this._data.tasks[taskIndex];
+            this._comm.publish({
+              type: 'set-active-task',
+              taskId: task.id
+            });
+          },
           onEditTaskClicked: taskIndex => {
+            const task = this._data.tasks[taskIndex];
             const name = prompt(
               'Enter new task name',
-              this._data.tasks[taskIndex].name);
+              task.name);
             if (name) {
               this._comm.publish({
                 type: 'rename-task',
-                taskIndex,
+                taskId: task.id,
                 taskName: name,
               });
             }
@@ -141,12 +186,12 @@ export default class DailyTrackerComponent extends Component {
           label: 'Started',
           content: mapVariables([this._startTime], () => {
             if (this._startTime.value !== null) {
-              return dateToHoursMinutesString(this._startTime.value);
+              return timeToHoursMinutesString(this._startTime.value);
             } else {
               return '--';
             }
           }),
-        },  {
+        }, {
           type: 'div',
           style: {
             textAlign: 'right',

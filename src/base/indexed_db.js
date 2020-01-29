@@ -10,6 +10,14 @@ class TransactionStore {
       request.onerror = (evt => reject(evt.target.error));
     });
   }
+
+  getAll(query, count) {
+    return new Promise((resolve, reject) => {
+      const request = this._store.getAll(query, count);
+      request.onsuccess = (evt => resolve(evt.target.result));
+      request.onerror = (evt => reject(evt.target.error));
+    });
+  }
 }
 
 export default class IndexedDB {
@@ -47,6 +55,19 @@ export default class IndexedDB {
         (error) => reject(error),
         (oldVersion) => onUpgradeNeeded(db, oldVersion));
     });
+  }
+
+  static delete(name) {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.deleteDatabase(name);
+      // FIXME(stesim): callbacks are never called
+      request.onsuccess = () => resolve();
+      request.onerror = (evt) => reject(evt.target.error);
+    });
+  }
+
+  close() {
+    this._db.close();
   }
 
   containsStore(name) {

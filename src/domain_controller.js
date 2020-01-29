@@ -1,8 +1,47 @@
+import AppDataSaver from './app_data_saver.js';
+import IndexedDB from './base/indexed_db.js';
+
+function upgradeIndexDB(db, oldVersion) {
+  switch (oldVersion) {
+    case 0: {
+      const taskStore = db.createStore(
+        'tasks', {
+          keyPath: 'id',
+          autoIncrement: true,
+        }
+      );
+      taskStore.createIndex(
+        'creationTime',
+        'creationTime',
+        {unique: false});
+
+      const taskSwitchStore = db.createStore(
+        'taskSwitches', {
+          keyPath: 'id',
+          autoIncrement: true,
+        }
+      );
+      taskSwitchStore.createIndex(
+        'time',
+        'time',
+        {unique: true});
+      taskSwitchStore.createIndex(
+        'taskId',
+        'taskId',
+        {unique: false});
+    }
+  }
+}
+
 export default class DomainController {
   constructor(dataModel, communicationEndpoint) {
     this._data = dataModel;
     this._comm = communicationEndpoint;
     this._comm.subscribe(message => this._handleMessage(message));
+
+    this._db = null;
+    this._dataSaver = null;
+    this._initDatabase();
 
     this._serviceWorker = undefined;
     navigator.serviceWorker.ready.then((registration) => {
@@ -11,17 +50,21 @@ export default class DomainController {
     });
 
     this._supportedMessageActions = {
-      'activate-update' : (message) => this._activateUpdate(),
-      'add-task'        : (message) => this._addTask(message.taskName),
-      'clear-cache'     : (message) => this._clearCache(),
-      'rename-task'     : (message) => this._renameTask(message.taskIndex, message.taskName),
-      'set-active-task' : (message) => this._addTaskSwitch(message.taskIndex),
+      'activate-update'       : (message) => this._activateUpdate(),
+      'add-task'              : (message) => this._addTask(message.taskName),
+      'clear-cache'           : (message) => this._clearCache(),
+      'clear-database'        : (message) => this._clearDatabase(),
+      'rename-task'           : (message) => this._renameTask(message.taskId, message.taskName),
+      'restore-from-database' : (message) => this._restoreFromDatabase(),
+      'set-active-task'       : (message) => this._addTaskSwitch(message.taskId),
     };
+  }
 
-    this._previousUpdateTime = 0;
-    this._updateInterval = setInterval(() => {
-      this._updateActiveTaskTime();
-    }, 10000);
+  _initDatabase() {
+    IndexedDB.open('sTime', 1, upgradeIndexDB).then((db) => {
+      this._db = db;
+      this._dataSaver = new AppDataSaver(this._data, this._db);
+    });
   }
 
   _checkForWaitingUpdate() {
@@ -68,12 +111,16 @@ export default class DomainController {
   _addTask(name) {
     const task = {
       name,
-      activeTime: 0,
       creationTime: Date.now(),
     };
-    // this._data.app.tasks.push(task);
-    this._data.app.tasks = [...this._data.app.tasks, task];
-    this._addTaskSwitch(this._data.app.tasks.length - 1, task.creationTime);
+
+    this._dataSaver.addTask(task).then(() => {
+      const newTask = this._data.app.tasks[this._data.app.tasks.length - 1];
+      this._addTaskSwitch(
+        newTask.id,
+        newTask.creationTime,
+      );
+    });
   }
 
   _clearCache() {
@@ -84,40 +131,39 @@ export default class DomainController {
     }
   }
 
-  get _activeTaskIndex() {
-    const taskSwitches = this._data.app.taskSwitches;
-    if (taskSwitches.length > 0) {
-      return taskSwitches[taskSwitches.length - 1].taskIndex;
+  _clearDatabase() {
+    this._dataSaver = null;
+    this._db.close();
+    this._db = null;
+    IndexedDB.delete('sTime')
+      .then(() => this._initDatabase())
+      .catch((error) => console.error('Failed to delete database', error));
+  }
+
+  _restoreFromDatabase() {
+    this._dataSaver.restoreAll();
+  }
+
+  get _latestSwitch() {
+    if (this._data.app.taskSwitches.length > 0) {
+      return this._data.app.taskSwitches[this._data.app.taskSwitches.length - 1];
+    } else {
+      return null;
     }
-    return null;
   }
 
-  get _activeTask() {
-    const taskIndex = this._activeTaskIndex;
-    return (taskIndex !== null ? this._data.app.tasks[taskIndex] : null);
-  }
-
-  _addTaskSwitch(taskIndex, time = Date.now()) {
-    if (taskIndex === this._activeTaskIndex) {
+  _addTaskSwitch(taskId, time = Date.now()) {
+    const latestSwitch = this._latestSwitch;
+    if (latestSwitch !== null &&
+        taskId === latestSwitch.taskId) {
       return;
     }
-
-    this._updateActiveTaskTime(time);
-
-    const switchEntry = {taskIndex, time};
-    this._data.app.taskSwitches = [...this._data.app.taskSwitches, switchEntry];
+    const switchEntry = {taskId, time};
+    this._dataSaver.addTaskSwitch(switchEntry);
   }
 
-  _updateActiveTaskTime(now = Date.now()) {
-    const activeTask = this._activeTask;
-    if (activeTask !== null) {
-      const timeSincePreviousSwitch = (now - this._previousUpdateTime);
-      activeTask.activeTime += timeSincePreviousSwitch;
-    }
-    this._previousUpdateTime = now;
-  }
-
-  _renameTask(index, name) {
-    this._data.app.tasks[index].name = name;
+  _renameTask(id, name) {
+    const task = this._data.app.tasks.find(task => (task.id === id));
+    task.name = name;
   }
 }

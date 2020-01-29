@@ -2,10 +2,10 @@ import Component from './base/component.js';
 import Variable from './base/variable.js';
 import render from './base/render.js';
 import mapVariables from './base/map_variables.js';
-import { timeToHoursAndMinutesString, timeToDecimalHoursString, dateToHoursMinutesString } from './time_format.js';
+import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
 
 function formatTimeString(time) {
-  return `${timeToHoursAndMinutesString(time)} (${timeToDecimalHoursString(time)})`;
+  return `${timeDurationToHoursAndMinutesString(time)} (${timeDurationToDecimalHoursString(time)})`;
 }
 
 export default class TimeTicketComponent extends Component {
@@ -83,7 +83,7 @@ export default class TimeTicketComponent extends Component {
         },
         textContent: mapVariables([this._creationTime], () => {
           if (this._creationTime.value !== null) {
-            return dateToHoursMinutesString(new Date(this._creationTime.value));
+            return timeToHoursMinutesString(this._creationTime.value);
           }
           return '--:--';
         }),
