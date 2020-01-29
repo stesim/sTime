@@ -62,6 +62,8 @@ export default class DailyTrackerComponent extends Component {
             const lastSwitch = taskSwitches[taskSwitches.length - 1];
             this._activeTaskIndex.value =
               this._getTaskIndexFromId(lastSwitch.taskId);
+          } else {
+            this._activeTaskIndex.value = null;
           }
           this._updateTaskTimes();
           break;
@@ -78,6 +80,9 @@ export default class DailyTrackerComponent extends Component {
   }
 
   _getTaskIndexFromId(id) {
+    if (id === null) {
+      return null;
+    }
     return this._tasks.value.findIndex(task => (task.id == id));
   }
 
@@ -99,8 +104,12 @@ export default class DailyTrackerComponent extends Component {
       }
     });
     idToTimesMap.forEach((time, id) => {
-      const taskIndex = this._getTaskIndexFromId(id);
-      this._tasks.value[taskIndex].activeTime.value = time;
+      if (id !== null) {
+        const taskIndex = this._getTaskIndexFromId(id);
+        this._tasks.value[taskIndex].activeTime.value = time;
+      } else {
+        // console.log('Break time', time);
+      }
     });
 
     this._updatePreviewTimes();
@@ -108,15 +117,18 @@ export default class DailyTrackerComponent extends Component {
 
   _updatePreviewTimes() {
     const now = Date.now();
-    if (this._startTime.value !== null) {
-      this._totalTime.value = (now - this._startTime.value);
-    }
     if (this._data.taskSwitches.length > 0) {
       const activeTaskId = this._getLatestSwitch().taskId;
-      const taskIndex = this._getTaskIndexFromId(activeTaskId);
-      this._tasks.value[taskIndex].activeTime.value +=
-        (now - this._latestPreviewUpdateTime);
-      this._latestPreviewUpdateTime = now;
+      if (activeTaskId !== null) {
+        const taskIndex = this._getTaskIndexFromId(activeTaskId);
+        this._tasks.value[taskIndex].activeTime.value +=
+          (now - this._latestPreviewUpdateTime);
+        this._latestPreviewUpdateTime = now;
+      }
+      this._totalTime.value = this._tasks.value.reduce(
+        (accumulatedTime, task) => (accumulatedTime + task.activeTime.value),
+        0
+      );
     }
   }
 
@@ -159,10 +171,17 @@ export default class DailyTrackerComponent extends Component {
           activeTaskIndex: this._activeTaskIndex,
           onTaskClicked: taskIndex => {
             const task = this._data.tasks[taskIndex];
-            this._comm.publish({
-              type: 'set-active-task',
-              taskId: task.id
-            });
+            if (this._data.taskSwitches.length === 0 ||
+                task.id !== this._data.taskSwitches[this._data.taskSwitches.length - 1].taskId) {
+              this._comm.publish({
+                type: 'set-active-task',
+                taskId: task.id
+              });
+            } else {
+              this._comm.publish({
+                type: 'clear-active-task',
+              });
+            }
           },
           onEditTaskClicked: taskIndex => {
             const task = this._data.tasks[taskIndex];

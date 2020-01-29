@@ -17,7 +17,7 @@ export default class AppDataSaver {
             }
           ];
         }).catch((error) => {
-          alert('failed to add task to database', error);
+          alert('failed to add task to database: ' + error);
         });
       },
     );
@@ -32,7 +32,7 @@ export default class AppDataSaver {
           this._data.app.tasks = this._data.app.tasks.map(
             originalTask => (originalTask.id === task.id ? task : originalTask));
         }).catch((error) => {
-          alert('failed to update task in database', error);
+          alert('failed to update task in database: ' + error + '\n' + error.stack);
         });
       },
     );
@@ -51,7 +51,7 @@ export default class AppDataSaver {
             }
           ];
         }).catch((error) => {
-          alert('failed to add task switch to database', error);
+          alert('failed to add task switch to database: ' + error + '\n' + error.stack);
         });
       },
     );

@@ -52,6 +52,7 @@ export default class DomainController {
     this._supportedMessageActions = {
       'activate-update'       : (message) => this._activateUpdate(),
       'add-task'              : (message) => this._addTask(message.taskName),
+      'clear-active-task'     : (message) => this._clearActiveTask(),
       'clear-cache'           : (message) => this._clearCache(),
       'clear-database'        : (message) => this._clearDatabase(),
       'rename-task'           : (message) => this._renameTask(message.taskId, message.taskName),
@@ -121,6 +122,10 @@ export default class DomainController {
         newTask.creationTime,
       );
     });
+  }
+
+  _clearActiveTask() {
+    this._addTaskSwitch(null);
   }
 
   _clearCache() {
