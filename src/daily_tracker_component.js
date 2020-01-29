@@ -34,17 +34,7 @@ export default class DailyTrackerComponent extends Component {
     this._totalTime = new Variable(0);
     this._latestPreviewUpdateTime = Date.now();
     this._previewTimeUpdateInterval = setInterval(() => {
-      if (this._startTime.value !== null) {
-        this._totalTime.value = (Date.now() - this._startTime.value);
-      }
-      if (this._data.taskSwitches.length > 0) {
-        const activeTaskId = this._getLatestSwitch().taskId;
-        const taskIndex = this._getTaskIndexFromId(activeTaskId);
-        const now = Date.now();
-        this._tasks.value[taskIndex].activeTime.value +=
-          (now - this._latestPreviewUpdateTime);
-        this._latestPreviewUpdateTime = now;
-      }
+      this._updatePreviewTimes();
     }, 60000);
 
     this._isDebugMenuVisible = new Variable(false);
@@ -66,15 +56,17 @@ export default class DailyTrackerComponent extends Component {
           break;
         case 'taskSwitches':
           const taskSwitches = value;
-          if (this._startTime.value === null) {
-            const firstSwitch = taskSwitches[0];
-            this._startTime.value = firstSwitch.time;
+          if (taskSwitches.length > 0) {
+            if (this._startTime.value === null) {
+              const firstSwitch = taskSwitches[0];
+              this._startTime.value = firstSwitch.time;
+            }
+            const lastSwitch = taskSwitches[taskSwitches.length - 1];
+            this._activeTaskIndex.value =
+              this._getTaskIndexFromId(lastSwitch.taskId);
+            this._latestPreviewUpdateTime = lastSwitch.time;
+            this._updateTaskTimes();
           }
-          const lastSwitch = taskSwitches[taskSwitches.length - 1];
-          this._activeTaskIndex.value =
-            this._getTaskIndexFromId(lastSwitch.taskId);
-          this._updateTaskTimes();
-          this._latestPreviewUpdateTime = lastSwitch.time;
           break;
       }
     });
@@ -110,6 +102,22 @@ export default class DailyTrackerComponent extends Component {
       const taskIndex = this._getTaskIndexFromId(id);
       this._tasks.value[taskIndex].activeTime.value = time;
     });
+
+    this._updatePreviewTimes();
+  }
+
+  _updatePreviewTimes() {
+    const now = Date.now();
+    if (this._startTime.value !== null) {
+      this._totalTime.value = (now - this._startTime.value);
+    }
+    if (this._data.taskSwitches.length > 0) {
+      const activeTaskId = this._getLatestSwitch().taskId;
+      const taskIndex = this._getTaskIndexFromId(activeTaskId);
+      this._tasks.value[taskIndex].activeTime.value +=
+        (now - this._latestPreviewUpdateTime);
+      this._latestPreviewUpdateTime = now;
+    }
   }
 
   $render() {
@@ -258,8 +266,7 @@ export default class DailyTrackerComponent extends Component {
           position: 'absolute',
           width: '100%',
           height: '100%',
-          opacity: 0.75,
-          backgroundColor: '#000000',
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
         })),
         children: [this._debugMenu],
       }],

@@ -1,22 +1,28 @@
+function promisifyRequest(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = (evt => resolve(evt.target.result));
+    request.onerror = (evt => reject(evt.target.error));
+  });
+}
+
 class TransactionStore {
   constructor(store) {
     this._store = store;
   }
 
   add(value, key) {
-    return new Promise((resolve, reject) => {
-      const request = this._store.add(value, key);
-      request.onsuccess = (evt => resolve(evt.target.result));
-      request.onerror = (evt => reject(evt.target.error));
-    });
+    return promisifyRequest(
+      this._store.add(value, key));
   }
 
   getAll(query, count) {
-    return new Promise((resolve, reject) => {
-      const request = this._store.getAll(query, count);
-      request.onsuccess = (evt => resolve(evt.target.result));
-      request.onerror = (evt => reject(evt.target.error));
-    });
+    return promisifyRequest(
+      this._store.getAll(query, count));
+  }
+
+  clear() {
+    return promisifyRequest(
+      this._store.clear());
   }
 }
 

@@ -19,9 +19,6 @@ export default class DebugMenuComponent extends Component {
       }
     });
     this._actions = [{
-      name: 'Restore from database',
-      action: () => this._comm.publish({type: 'restore-from-database'}),
-    }, {
       name: 'Activate update',
       action: () => this._comm.publish({type: 'activate-update'}),
       style: {
@@ -30,11 +27,14 @@ export default class DebugMenuComponent extends Component {
         }),
       },
     }, {
-      name: 'Clear cache',
-      action: () => this._comm.publish({type: 'clear-cache'}),
+      name: 'Restore from database',
+      action: () => this._comm.publish({type: 'restore-from-database'}),
     }, {
       name: 'Clear database',
       action: () => this._comm.publish({type: 'clear-database'}),
+    }, {
+      name: 'Clear cache',
+      action: () => this._comm.publish({type: 'clear-cache'}),
     }, {
       name: 'Close',
       action: () => this._close(),

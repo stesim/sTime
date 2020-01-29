@@ -96,7 +96,7 @@ export default class DomainController {
     if (action !== undefined) {
       action(message);
     } else {
-      console.error('LogicController received unsupported message:', message)
+      alert('Controller received unsupported message:', message)
     }
   }
 
@@ -104,7 +104,7 @@ export default class DomainController {
     if (this._serviceWorker.waiting) {
       this._serviceWorker.waiting.postMessage('skip-waiting');
     } else {
-      console.error('No waiting ServiceWorker registration');
+      alert('No waiting ServiceWorker registration');
     }
   }
 
@@ -132,12 +132,7 @@ export default class DomainController {
   }
 
   _clearDatabase() {
-    this._dataSaver = null;
-    this._db.close();
-    this._db = null;
-    IndexedDB.delete('sTime')
-      .then(() => this._initDatabase())
-      .catch((error) => console.error('Failed to delete database', error));
+    this._dataSaver.clearAll();
   }
 
   _restoreFromDatabase() {

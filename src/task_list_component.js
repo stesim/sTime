@@ -19,7 +19,6 @@ export default class TaskListComponent extends Component {
 
   set tasks(value) {
     this._tasks.value = value;
-    this._activeTaskIndex.value = null;
   }
 
   get activeTaskIndex() {
