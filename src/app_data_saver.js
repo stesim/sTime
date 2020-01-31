@@ -1,7 +1,45 @@
+import IndexedDB from './base/indexed_db.js';
+
+function upgradeIndexDB(db, oldVersion) {
+  switch (oldVersion) {
+    case 0: {
+      const taskStore = db.createStore(
+        'tasks', {
+          keyPath: 'id',
+          autoIncrement: true,
+        }
+      );
+      taskStore.createIndex(
+        'creationTime',
+        'creationTime',
+        {unique: false});
+
+      const taskSwitchStore = db.createStore(
+        'taskSwitches', {
+          keyPath: 'id',
+          autoIncrement: true,
+        }
+      );
+      taskSwitchStore.createIndex(
+        'time',
+        'time',
+        {unique: true});
+      taskSwitchStore.createIndex(
+        'taskId',
+        'taskId',
+        {unique: false});
+    }
+  }
+}
+
 export default class AppDataSaver {
-  constructor(dataModel, indexedDB) {
+  constructor(dataModel) {
     this._data = dataModel;
-    this._db = indexedDB;
+    this._db = null;
+
+    IndexedDB.open('sTime', 1, upgradeIndexDB).then((db) => {
+      this._db = db;
+    });
   }
 
   addTask(task) {
@@ -11,10 +49,8 @@ export default class AppDataSaver {
       store => {
         store.add(task).then((id) => {
           this._data.app.tasks = [
-            ...this._data.app.tasks, {
-              ...task,
-              id,
-            }
+            ...this._data.app.tasks,
+            {...task, id}
           ];
         }).catch((error) => {
           alert('failed to add task to database: ' + error);
@@ -57,17 +93,28 @@ export default class AppDataSaver {
     );
   }
 
-  restoreAll() {
+  restore(date = Date.now()) {
+    const dateWithoutTime = new Date(date);
+    dateWithoutTime.setHours(0, 0, 0, 0);
+    const nextDay = new Date();
+    nextDay.setDate(dateWithoutTime.getDate() + 1);
+
     let tasks;
     let taskSwitches;
     return this._db.transaction(
       ['tasks', 'taskSwitches'],
       'readonly',
       stores => {
-        stores.tasks.getAll().then(result => {
+        const range = IDBKeyRange.bound(
+          dateWithoutTime.valueOf(),
+          nextDay.valueOf(),
+          false,
+          true,
+        );
+        stores.tasks.index('creationTime').getAll(range).then(result => {
           tasks = result;
         });
-        stores.taskSwitches.getAll().then(result => {
+        stores.taskSwitches.index('time').getAll(range).then(result => {
           taskSwitches = result;
         });
       },

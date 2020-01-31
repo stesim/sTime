@@ -1,37 +1,4 @@
 import AppDataSaver from './app_data_saver.js';
-import IndexedDB from './base/indexed_db.js';
-
-function upgradeIndexDB(db, oldVersion) {
-  switch (oldVersion) {
-    case 0: {
-      const taskStore = db.createStore(
-        'tasks', {
-          keyPath: 'id',
-          autoIncrement: true,
-        }
-      );
-      taskStore.createIndex(
-        'creationTime',
-        'creationTime',
-        {unique: false});
-
-      const taskSwitchStore = db.createStore(
-        'taskSwitches', {
-          keyPath: 'id',
-          autoIncrement: true,
-        }
-      );
-      taskSwitchStore.createIndex(
-        'time',
-        'time',
-        {unique: true});
-      taskSwitchStore.createIndex(
-        'taskId',
-        'taskId',
-        {unique: false});
-    }
-  }
-}
 
 export default class DomainController {
   constructor(dataModel, communicationEndpoint) {
@@ -39,9 +6,7 @@ export default class DomainController {
     this._comm = communicationEndpoint;
     this._comm.subscribe(message => this._handleMessage(message));
 
-    this._db = null;
-    this._dataSaver = null;
-    this._initDatabase();
+    this._dataSaver = new AppDataSaver(this._data);
 
     this._serviceWorker = undefined;
     navigator.serviceWorker.ready.then((registration) => {
@@ -59,13 +24,6 @@ export default class DomainController {
       'restore-from-database' : (message) => this._restoreFromDatabase(),
       'set-active-task'       : (message) => this._addTaskSwitch(message.taskId),
     };
-  }
-
-  _initDatabase() {
-    IndexedDB.open('sTime', 1, upgradeIndexDB).then((db) => {
-      this._db = db;
-      this._dataSaver = new AppDataSaver(this._data, this._db);
-    });
   }
 
   _checkForWaitingUpdate() {
@@ -97,7 +55,7 @@ export default class DomainController {
     if (action !== undefined) {
       action(message);
     } else {
-      alert('Controller received unsupported message:', message)
+      alert('Controller received unsupported message:' + message)
     }
   }
 
@@ -141,7 +99,7 @@ export default class DomainController {
   }
 
   _restoreFromDatabase() {
-    this._dataSaver.restoreAll();
+    this._dataSaver.restore();
   }
 
   get _latestSwitch() {

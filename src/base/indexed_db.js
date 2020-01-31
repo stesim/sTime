@@ -10,6 +10,11 @@ class TransactionStore {
     this._store = store;
   }
 
+  index(name) {
+    return new StoreIndex(
+      this._store.index(name));
+  }
+
   add(value, key) {
     return promisifyRequest(
       this._store.add(value, key));
@@ -28,6 +33,17 @@ class TransactionStore {
   clear() {
     return promisifyRequest(
       this._store.clear());
+  }
+}
+
+class StoreIndex {
+  constructor(index) {
+    this._index = index;
+  }
+
+  getAll(query, count) {
+    return promisifyRequest(
+      this._index.getAll(query, count));
   }
 }
 
