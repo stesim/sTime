@@ -15,6 +15,21 @@ class TransactionStore {
       this._store.index(name));
   }
 
+  openCursor(action, query, direction) {
+    return new Promise((resolve, reject) => {
+      const request = this._store.openCursor(query, direction);
+      request.onsuccess = (evt => {
+        const cursor = evt.target.result;
+        if (cursor) {
+          action(cursor);
+        } else {
+          resolve();
+        }
+      });
+      request.onerror = (evt => reject(evt.target.error));
+    });
+  }
+
   add(value, key) {
     return promisifyRequest(
       this._store.add(value, key));
