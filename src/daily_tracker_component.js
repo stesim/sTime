@@ -22,7 +22,7 @@ function formatTimeString(time) {
 }
 
 export default class DailyTrackerComponent extends Component {
-  constructor(dataModel, communicationEndpoint, debugMenu) {
+  constructor(dataModel, communicationEndpoint, debugMenu, notificationList) {
     super();
     this._data = dataModel;
     this._comm = communicationEndpoint;
@@ -42,6 +42,8 @@ export default class DailyTrackerComponent extends Component {
     this._debugMenu.closeAction = () => {
       this._isDebugMenuVisible.value = false;
     };
+
+    this._notificationList = notificationList;
 
     addDataModelListener(this._data, (key, value) => {
       switch (key) {
@@ -276,6 +278,15 @@ export default class DailyTrackerComponent extends Component {
         onclick: () => {
           this._isDebugMenuVisible.value = true;
         },
+      }, {
+        type: 'div',
+        style: {
+          position: 'absolute',
+          bottom: '8em',
+          left: '20%',
+          right: '0px',
+        },
+        children: [this._notificationList],
       }, {
         type: 'div',
         style: mapVariables([this._isDebugMenuVisible], () => ({

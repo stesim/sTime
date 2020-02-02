@@ -19,7 +19,7 @@ class TransformedVariable extends Variable {
   }
 
   get value() {
-    return this._transform(...this._originalVariables);
+    return this._transform(...this._originalVariables.map(variable => variable.value));
   }
 
   set value(value) {

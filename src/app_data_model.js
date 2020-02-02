@@ -5,6 +5,7 @@ const dataModel = createDataModel('sTime', {
     version: 1,
     initTime: Date.now(),
     updateWaiting: false,
+    notifications: [],
   },
   app: {
     tasks: [],

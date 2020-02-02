@@ -20,6 +20,7 @@ export default class DomainController {
       'clear-active-task'     : (message) => this._clearActiveTask(),
       'clear-cache'           : (message) => this._clearCache(),
       'clear-database'        : (message) => this._clearDatabase(),
+      'dismiss-notification'  : (message) => this._dismissNotification(message.notificationId),
       'rename-task'           : (message) => this._renameTask(message.taskId, message.taskName),
       'restore-from-database' : (message) => this._restoreFromDatabase(),
       'set-active-task'       : (message) => this._addTaskSwitch(message.taskId),
@@ -29,6 +30,12 @@ export default class DomainController {
   _checkForWaitingUpdate() {
     const setUpdateIsWaiting = () => {
       this._data.sys.updateWaiting = true;
+
+      this._addNotification({
+        type: 'default',
+        summary: 'Update available',
+        details: 'Apply from the debug menu.',
+      });
     };
 
     const registration = this._serviceWorker;
@@ -57,6 +64,20 @@ export default class DomainController {
     } else {
       alert('Controller received unsupported message:' + message)
     }
+  }
+
+  _addNotification(notification) {
+    const notifications = this._data.sys.notifications;
+    let generatedId;
+    do {
+      generatedId = Math.floor(Math.random() * 2**32);
+    } while (notifications.some(existing => (existing.id === generatedId)));
+
+    notification.id = generatedId;
+    this._data.sys.notifications = [
+      ...notifications,
+      notification,
+    ];
   }
 
   _activateUpdate() {
@@ -99,7 +120,24 @@ export default class DomainController {
   }
 
   _restoreFromDatabase() {
-    this._dataSaver.restore();
+    this._dataSaver.restore().then(() => {
+      this._addNotification({
+        type: 'affirm',
+        summary: 'Data restored',
+        details: 'Data has been restored from the database.',
+      });
+    }).catch((error) => {
+      this._addNotification({
+        type: 'error',
+        summary: 'Data restoration failed',
+        details: error.message,
+      });
+    });
+  }
+
+  _dismissNotification(id) {
+    this._data.sys.notifications =
+      this._data.sys.notifications.filter(notification => (notification.id !== id));
   }
 
   get _latestSwitch() {

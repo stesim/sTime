@@ -102,7 +102,6 @@ export default class IndexedDB {
   static delete(name) {
     return new Promise((resolve, reject) => {
       const request = indexedDB.deleteDatabase(name);
-      // FIXME(stesim): callbacks are never called
       request.onsuccess = () => resolve();
       request.onerror = (evt) => reject(evt.target.error);
     });
