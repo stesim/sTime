@@ -4,7 +4,7 @@ const staticCacheVersion = 6;
 
 // NOTE: bump the dynamic cache version if any of the resources loaded by the
 // static resources have been modified (e.g. JS or CSS files)
-const dynamicCacheVersion = 16;
+const dynamicCacheVersion = 17;
 
 const staticCacheResources = [
   'src/app.js',
