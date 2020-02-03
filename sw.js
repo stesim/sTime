@@ -1,6 +1,6 @@
 // NOTE: bump the static cache version if any of the statically cached resources
 // listed below have been modified, or if entries need to be added or removed
-const staticCacheVersion = 5;
+const staticCacheVersion = 6;
 
 // NOTE: bump the dynamic cache version if any of the resources loaded by the
 // static resources have been modified (e.g. JS or CSS files)
