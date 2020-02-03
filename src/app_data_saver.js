@@ -1,5 +1,7 @@
 import IndexedDB from './base/indexed_db.js';
 
+const dbVersion = 2;
+
 function upgradeIndexDB(db, oldVersion) {
   switch (oldVersion) {
     case 0: {
@@ -29,6 +31,13 @@ function upgradeIndexDB(db, oldVersion) {
         'taskId',
         {unique: false});
     }
+    case 1: {
+      db.createStore(
+        'settings', {
+          keyPath: 'key',
+        }
+      );
+    }
   }
 }
 
@@ -37,8 +46,19 @@ export default class AppDataSaver {
     this._data = dataModel;
     this._db = null;
 
-    IndexedDB.open('sTime', 1, upgradeIndexDB).then((db) => {
+    IndexedDB.open('sTime', dbVersion, upgradeIndexDB).then((db) => {
       this._db = db;
+      this._restoreSettings();
+    });
+  }
+
+  updateSettings(key, value) {
+    return this._db.transaction(
+      'settings',
+      'readwrite',
+      store => store.put({...value, key}),
+    ).then(() => {
+      this._data.sys.settings[key] = value;
     });
   }
 
@@ -127,16 +147,35 @@ export default class AppDataSaver {
   }
 
   clearAll() {
+    const stores = ['tasks', 'taskSwitches', 'settings'];
     return this._db.transaction(
-      ['tasks', 'taskSwitches'],
+      stores,
       'readwrite',
-      stores => {
-        stores.tasks.clear();
-        stores.taskSwitches.clear();
+      dbStores => {
+        stores.forEach(store => dbStores[store].clear());
       },
     ).then(() => {
+      // TODO(stesim): remove?
       this._data.app.taskSwitches = [];
       this._data.app.tasks = [];
+      // FIXME(stesim): this is definitely foul
+      this._data.sys.settings.jira.url = '';
+      this._data.sys.settings.jira.authorization = '';
+      this._data.sys.settings.jira.defaultIssueKey = '';
     });
+  }
+
+  _restoreSettings() {
+    return this._db.transaction(
+      'settings',
+      'readonly',
+      store => {
+        store.getAll().then(results => {
+          for (const {key, ...value} of results) {
+            Object.assign(this._data.sys.settings[key], value);
+          }
+        });
+      },
+    );
   }
 }

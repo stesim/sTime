@@ -30,6 +30,47 @@ export default class DebugMenuComponent extends Component {
       name: 'Restore from database',
       action: () => this._comm.publish({type: 'restore-from-database'}),
     }, {
+      name: 'Import task from JIRA',
+      action: () => {
+        const defaultKeyPrefix = this._data.settings.jira.defaultIssueKeyPrefix;
+        const issueKey = prompt(
+          `Enter issue key (e.g. ${defaultKeyPrefix || 'FOO'}-123)`,
+          defaultKeyPrefix ? `${defaultKeyPrefix}-` : '');
+        if (issueKey) {
+          this._comm.publish({type: 'import-jira-issue', issueKey});
+        }
+      },
+    }, {
+      name: 'Configure JIRA access',
+      action: () => {
+        const prompts = {
+          url: 'Enter JIRA server URL',
+          userName: 'Enter JIRA login name (e-mail)',
+          password: 'Enter JIRA password or API token',
+          defaultIssueKeyPrefix: 'Enter default issue key prefix',
+        };
+
+        const defaults = {
+          url: this._data.settings.jira.url,
+          defaultIssueKeyPrefix: this._data.settings.jira.defaultIssueKeyPrefix,
+        };
+
+        let proceed = true;
+        const config = {};
+        for (const key in prompts) {
+          const value = prompt(prompts[key], defaults[key] || '');
+          if (value) {
+            config[key] = value;
+          } else {
+            proceed = false;
+            break;
+          }
+        }
+        if (proceed) {
+          this._comm.publish({type: 'configure-jira', ...config});
+        }
+      },
+    }, {
       name: 'Clear database',
       action: () => this._comm.publish({type: 'clear-database'}),
     }, {

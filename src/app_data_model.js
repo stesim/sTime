@@ -5,6 +5,13 @@ const dataModel = createDataModel('sTime', {
     version: 1,
     initTime: Date.now(),
     updateWaiting: false,
+    settings: {
+      jira: {
+        url: '',
+        authorization: '',
+        defaultIssueKeyPrefix: '',
+      },
+    },
     notifications: [],
   },
   app: {

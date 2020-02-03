@@ -20,7 +20,9 @@ export default class DomainController {
       'clear-active-task'     : (message) => this._clearActiveTask(),
       'clear-cache'           : (message) => this._clearCache(),
       'clear-database'        : (message) => this._clearDatabase(),
+      'configure-jira'        : (message) => this._configureJira(message.url, message.userName, message.password, message.defaultIssueKeyPrefix),
       'dismiss-notification'  : (message) => this._dismissNotification(message.notificationId),
+      'import-jira-issue'     : (message) => this._importJiraIssue(message.issueKey),
       'rename-task'           : (message) => this._renameTask(message.taskId, message.taskName),
       'restore-from-database' : (message) => this._restoreFromDatabase(),
       'set-active-task'       : (message) => this._addTaskSwitch(message.taskId),
@@ -135,9 +137,75 @@ export default class DomainController {
     });
   }
 
+  _configureJira(url, userName, password, defaultIssueKeyPrefix) {
+    if (!atob) {
+      return;
+    }
+
+    const authorization = btoa(`${userName}:${password}`);
+    const settings = {url, authorization, defaultIssueKeyPrefix};
+    return this._dataSaver.updateSettings('jira', settings)
+      .then(() => this._sendJiraRequest(`search?maxResults=0`))
+      .then(() => {
+        this._addNotification({
+          type: 'affirm',
+          summary: 'JIRA configured',
+          details: `Configured access for JIRA instance: ${this._data.sys.settings.jira.url}`,
+        });
+      })
+      .catch(error => this._addNotification({
+        type: 'error',
+        summary: 'JIRA configuration failed',
+        details: error.message,
+      }));
+  }
+
+  _sendJiraRequest(restResource) {
+    const jiraSettings = this._data.sys.settings.jira;
+    if (jiraSettings.url && jiraSettings.authorization) {
+      const requestUrl = `${jiraSettings.url}/rest/api/latest/${restResource}`;
+      const requestOptions = {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache',
+        headers: {
+          'Authorization': `Basic ${jiraSettings.authorization}`,
+        },
+      };
+      return fetch(requestUrl, requestOptions)
+        .then(response => response.text())
+        .then(responseText => {
+          const responseJson = JSON.parse(responseText);
+          if (Array.isArray(responseJson.errorMessages)) {
+            throw new Error(`JIRA error: ${responseJson.errorMessages[0]}`);
+          }
+          return responseJson;
+        });
+    } else {
+      this._addNotification({
+        type: 'error',
+        summary: 'Invalid JIRA configuration',
+        details: 'Access to JIRA instance is not configured properly.',
+      });
+      return Promise.reject();
+    }
+  }
+
   _dismissNotification(id) {
     this._data.sys.notifications =
       this._data.sys.notifications.filter(notification => (notification.id !== id));
+  }
+
+  _importJiraIssue(issueKey) {
+    return this._sendJiraRequest(`issue/${issueKey}`)
+      .then((responseJson) => {
+        this._addTask(`${issueKey}: ${responseJson.fields.summary}`);
+      })
+      .catch(error => this._addNotification({
+        type: 'error',
+        summary: 'JIRA issue import failed',
+        details: error.message,
+      }));
   }
 
   get _latestSwitch() {

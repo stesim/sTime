@@ -35,14 +35,19 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(caches.match(event.request).then((cachedResponse) => {
-    return (cachedResponse || fetch(event.request).then((response) => {
-      return caches.open(dynamicCacheName).then((dynamicCache) => {
-        dynamicCache.put(event.request.url, response.clone());
-        return response;
-      });
+  const isExternal = !event.request.url.startsWith(self.location.origin);
+  if (isExternal) {
+    return fetch(event.request);
+  } else {
+    event.respondWith(caches.match(event.request).then((cachedResponse) => {
+      return (cachedResponse || fetch(event.request).then((response) => {
+        return caches.open(dynamicCacheName).then((dynamicCache) => {
+          dynamicCache.put(event.request.url, response.clone());
+          return response;
+        });
+      }));
     }));
-  }));
+  }
 });
 
 self.addEventListener('message', (evt) => {
