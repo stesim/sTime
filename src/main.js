@@ -3,7 +3,6 @@ import CommunicationChannel from './base/communication_channel.js';
 import DomainController from './domain_controller.js';
 import DebugMenuComponent from './debug_menu_component.js';
 import dataModel from './app_data_model.js';
-import IndexedDB from './base/indexed_db.js';
 import NotificationListComponent from './notification_list_component.js';
 
 window.dataModel = dataModel;
