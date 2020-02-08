@@ -49,6 +49,7 @@ export default class AppDataSaver {
     IndexedDB.open('sTime', dbVersion, upgradeIndexDB).then((db) => {
       this._db = db;
       this._restoreSettings();
+      this.restore();
     });
   }
 
