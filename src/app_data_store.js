@@ -1,6 +1,6 @@
-import { createDataModel } from './base/data_model.js';
+import { createDataStore } from './base/data_store.js';
 
-const dataModel = createDataModel('sTime', {
+const dataModel = createDataStore('sTime', {
   sys: {
     version: 1,
     initTime: Date.now(),

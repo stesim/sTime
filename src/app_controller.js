@@ -1,6 +1,6 @@
 import AppDataSaver from './app_data_saver.js';
 
-export default class DomainController {
+export default class AppController {
   constructor(dataModel, communicationEndpoint) {
     this._data = dataModel;
     this._comm = communicationEndpoint;

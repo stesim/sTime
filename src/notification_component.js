@@ -24,7 +24,7 @@ const kindSymbols = {
 export default class NotificationComponent extends Component {
   constructor() {
     super();
-    
+
     this.style = {};
     this.onClick = undefined;
     this._kind = new Variable('default');

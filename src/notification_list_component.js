@@ -3,17 +3,17 @@ import NotificationComponent from './notification_component.js';
 import Variable from './base/variable.js';
 import render from './base/render.js';
 import mapVariables from './base/map_variables.js';
-import { addDataModelListener } from './base/data_model.js';
+import { addDataStoreListener } from './base/data_store.js';
 
 export default class NotificationListComponent extends Component {
-  constructor(dataModel, communicationEndpoint) {
+  constructor(dataStore, communicationEndpoint) {
     super();
-    this._data = dataModel;
+    this._data = dataStore;
     this._comm = communicationEndpoint;
 
     this._notifications = new Variable([]);
 
-    addDataModelListener(this._data, (key, value) => {
+    addDataStoreListener(this._data, (key, value) => {
       if (key === 'notifications') {
         this._notifications.value = value;
       }

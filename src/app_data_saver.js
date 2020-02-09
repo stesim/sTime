@@ -42,8 +42,8 @@ function upgradeIndexDB(db, oldVersion) {
 }
 
 export default class AppDataSaver {
-  constructor(dataModel) {
-    this._data = dataModel;
+  constructor(dataStore) {
+    this._data = dataStore;
     this._db = null;
 
     IndexedDB.open('sTime', dbVersion, upgradeIndexDB).then((db) => {
@@ -162,7 +162,7 @@ export default class AppDataSaver {
       // FIXME(stesim): this is definitely foul
       this._data.sys.settings.jira.url = '';
       this._data.sys.settings.jira.authorization = '';
-      this._data.sys.settings.jira.defaultIssueKey = '';
+      this._data.sys.settings.jira.defaultIssueKeyPrefix = '';
     });
   }
 

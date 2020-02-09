@@ -6,7 +6,7 @@ import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
 import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
-import { addDataModelListener } from './base/data_model.js';
+import { addDataStoreListener } from './base/data_store.js';
 
 function formatDate(date) {
   const options = {
@@ -45,7 +45,7 @@ export default class DailyTrackerComponent extends Component {
 
     this._notificationList = notificationList;
 
-    addDataModelListener(this._data, (key, value) => {
+    addDataStoreListener(this._data, (key, value) => {
       switch (key) {
         case 'tasks':
           this._tasks.value = value.map(task => ({

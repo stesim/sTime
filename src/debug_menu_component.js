@@ -1,19 +1,19 @@
 import Component from './base/component.js';
 import render from './base/render.js';
 import Variable from './base/variable.js';
-import { addDataModelListener } from './base/data_model.js';
+import { addDataStoreListener } from './base/data_store.js';
 import mapVariables from './base/map_variables.js';
 
 export default class DebugMenuComponent extends Component {
-  constructor(dataModel, communicationEndpoint) {
+  constructor(dataStore, communicationEndpoint) {
     super();
-    this._data = dataModel;
+    this._data = dataStore;
     this._comm = communicationEndpoint;
 
     this.closeAction = undefined;
 
     this._activateUpdateVisible = new Variable(this._data.updateWaiting);
-    addDataModelListener(this._data, (key, value) => {
+    addDataStoreListener(this._data, (key, value) => {
       if (key === 'updateWaiting') {
         this._activateUpdateVisible.value = value;
       }
