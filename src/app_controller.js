@@ -182,12 +182,7 @@ export default class AppController {
           return responseJson;
         });
     } else {
-      this._addNotification({
-        type: 'error',
-        summary: 'Invalid JIRA configuration',
-        details: 'Access to JIRA instance is not configured properly.',
-      });
-      return Promise.reject();
+      return Promise.reject(new Error('Access to JIRA instance is not configured properly.'));
     }
   }
 

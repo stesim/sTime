@@ -1,30 +1,32 @@
 import Component from './base/component.js';
 import render from './base/render.js';
-import Variable from './base/variable.js';
 import { addDataStoreListener } from './base/data_store.js';
 import mapVariables from './base/map_variables.js';
 
 export default class DebugMenuComponent extends Component {
   constructor(dataStore, communicationEndpoint) {
-    super();
+    super({
+      updateAvailable: dataStore.updateWaiting,
+    });
+
     this._data = dataStore;
     this._comm = communicationEndpoint;
 
     this.closeAction = undefined;
 
-    this._activateUpdateVisible = new Variable(this._data.updateWaiting);
     addDataStoreListener(this._data, (key, value) => {
       if (key === 'updateWaiting') {
-        this._activateUpdateVisible.value = value;
+        this._setVariable('updateAvailable', value);
       }
     });
     this._actions = [{
       name: 'Activate update',
       action: () => this._comm.publish({type: 'activate-update'}),
       style: {
-        display: mapVariables([this._activateUpdateVisible], () => {
-          return (this._activateUpdateVisible.value ? '' : 'none');
-        }),
+        display: mapVariables(
+          [this._variables.updateAvailable],
+          updateAvailable => (updateAvailable ? '' : 'none'),
+        ),
       },
     }, {
       name: 'Restore from database',
@@ -102,7 +104,7 @@ export default class DebugMenuComponent extends Component {
       onclick: () => {
         this._close();
       },
-      children: this._actions.map((entry) => ({
+      children: this._actions.map(entry => ({
         type: 'div',
         textContent: entry.name,
         onclick: (evt) => {

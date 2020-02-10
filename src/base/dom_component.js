@@ -51,7 +51,7 @@ export default class DomComponent extends Component {
     } else if (name in this._domNode) {
       this._domNode[name] = value;
     } else {
-      throw new TypeError(`cannot assign non-existing property: ${name}`);
+      super.setProperty(name, value);
     }
   }
 
