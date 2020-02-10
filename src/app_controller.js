@@ -91,8 +91,18 @@ export default class AppController {
   }
 
   _addTask(name) {
+    const trimmedName = name.trim();
+    if (trimmedName.length === 0) {
+      this._addNotification({
+        type: 'error',
+        summary: 'Task creation failed',
+        details: 'Task name must not be empty.',
+      });
+      return;
+    }
+
     const task = {
-      name,
+      trimmedName,
       creationTime: Date.now(),
     };
 

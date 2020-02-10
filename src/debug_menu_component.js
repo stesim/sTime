@@ -2,6 +2,9 @@ import Component from './base/component.js';
 import render from './base/render.js';
 import { addDataStoreListener } from './base/data_store.js';
 import mapVariables from './base/map_variables.js';
+import ComponentStyle from './base/component_style.js';
+
+const style = new ComponentStyle();
 
 export default class DebugMenuComponent extends Component {
   constructor(dataStore, communicationEndpoint) {
@@ -93,32 +96,47 @@ export default class DebugMenuComponent extends Component {
   $render() {
     return render({
       type: 'div',
-      style: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexWrap: 'nowrap',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
-      },
+      className: style.className('debug-menu'),
       onclick: () => {
         this._close();
       },
-      children: this._actions.map(entry => ({
+      children: [{
+        type: 'h1',
+        className: style.className('title'),
+        textContent: 'Debug Menu',
+      },
+      ...this._actions.map(entry => ({
         type: 'div',
         textContent: entry.name,
         onclick: (evt) => {
           entry.action();
           evt.stopPropagation();
         },
-        style: {
-          backgroundColor: '#775555',
-          textAlign: 'center',
-          padding: '1em',
-          marginBottom: '0.5em',
-          ...entry.style,
-        },
-      })),
+        className: style.className('item'),
+        style: {...entry.style},
+      }))],
     });
   }
 }
+
+style.addRules(`
+  .debug-menu {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    text-align: center;
+  }
+  `, `
+  .title {
+    text-transform: uppercase;
+  }
+  `, `
+  .item {
+    background-color: #775555;
+    padding: 1em;
+    margin-bottom: 0.5em;
+  }
+`);

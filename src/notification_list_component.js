@@ -3,6 +3,9 @@ import NotificationComponent from './notification_component.js';
 import render from './base/render.js';
 import mapVariables from './base/map_variables.js';
 import { addDataStoreListener } from './base/data_store.js';
+import ComponentStyle from './base/component_style.js';
+
+const style = new ComponentStyle();
 
 export default class NotificationListComponent extends Component {
   constructor(dataStore, communicationEndpoint) {
@@ -22,11 +25,7 @@ export default class NotificationListComponent extends Component {
   $render() {
     return render({
       type: 'div',
-      style: {
-        display: 'flex',
-        flexDirection: 'column',
-        flexWrap: 'nowrap',
-      },
+      className: style.className('notification-list'),
       children: mapVariables(
         [this._variables.notifications],
         notifications => notifications.map(notification => ({
@@ -40,11 +39,20 @@ export default class NotificationListComponent extends Component {
               notificationId: notification.id,
             });
           },
-          style: {
-            marginBottom: '0.5em',
-          },
         }))
       ),
     });
   }
 }
+
+style.addRules(`
+  .notification-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+  `, `
+  .notification-list > * {
+    margin-bottom: 0.5em;
+  }
+`);

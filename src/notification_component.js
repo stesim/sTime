@@ -1,24 +1,14 @@
 import Component from './base/component.js';
 import render from './base/render.js';
-import mapVariables from './base/map_variables.js';
-
-const kindStyles = {
-  default: {
-    backgroundColor: '#333355',
-  },
-  affirm: {
-    backgroundColor: '#335533',
-  },
-  error: {
-    backgroundColor: '#553333',
-  },
-};
+import ComponentStyle from './base/component_style.js';
 
 const kindSymbols = {
   default: '✉',
   affirm: '✓',
   error: '✗',
 };
+
+const style = new ComponentStyle();
 
 export default class NotificationComponent extends Component {
   constructor() {
@@ -35,15 +25,8 @@ export default class NotificationComponent extends Component {
   $render() {
     return render({
       type: 'div',
-      style: {
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr',
-        gridGap: '0.2em',
-        alignItems: 'center',
-        padding: '0.75em',
-        ...kindStyles[this.kind],
-        ...this.style,
-      },
+      className: style.classNames('notification', this.kind).join(' '),
+      style: {...this.style},
       onclick: () => {
         if (this.onClick) {
           this.onClick();
@@ -51,24 +34,52 @@ export default class NotificationComponent extends Component {
       },
       children: [{
         type: 'span',
-        style: {
-          textAlign: 'center',
-          fontSize: '1.2em',
-        },
+        className: style.className('icon'),
         textContent: kindSymbols[this.kind],
       }, {
         type: 'span',
-        style: {
-          fontWeight: 'bold',
-        },
+        className: style.className('title'),
         textContent: this._variables.title,
       }, {
         type: 'span',
-        style: {
-          gridColumn: '1 / span 2',
-        },
+        className: style.className('description'),
         textContent: this._variables.description,
       }],
     });
   }
 }
+
+style.addRules(`
+  .notification {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-gap: 0.2em;
+    align-items: center;
+    padding: 0.75em;
+  }
+  `, `
+  .default {
+    background-color: #333355;
+  }
+  `, `
+  .affirm {
+    background-color: #335533;
+  }
+  `, `
+  .error {
+    background-color: #553333;
+  }
+  `, `
+  .icon {
+    text-align: center;
+    font-size: 1.2em;
+  }
+  `, `
+  .title {
+    font-weight: bold;
+  }
+  `, `
+  .description {
+    grid-column: 1 / span 2;
+  }
+`);

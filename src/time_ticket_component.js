@@ -2,10 +2,13 @@ import Component from './base/component.js';
 import render from './base/render.js';
 import mapVariables from './base/map_variables.js';
 import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
+import ComponentStyle from './base/component_style.js';
 
 function formatTimeString(time) {
   return `${timeDurationToHoursAndMinutesString(time)} (${timeDurationToDecimalHoursString(time)})`;
 }
+
+const style = new ComponentStyle();
 
 export default class TimeTicketComponent extends Component {
   constructor() {
@@ -28,28 +31,15 @@ export default class TimeTicketComponent extends Component {
           this.onClick();
         }
       },
-      style: mapVariables([this._variables.style], (style) => ({
-        display: 'grid',
-        gridTemplateColumns: '1fr auto',
-        gridGap: '0.2em',
-        alignItems: 'center',
-        backgroundColor: '#555577',
-        borderRadius: '0.75em',
-        padding: '0.75em',
-        ...style,
-      })),
+      style: this._variables.style,
+      className: style.className('time-ticket'),
       children: [{
         type: 'span',
         textContent: this._variables.name,
-        style: {
-          fontSize: '1.5em',
-          fontWeight: 'bold',
-        },
+        className: style.className('name'),
       }, {
         type: 'span',
-        style: {
-          textAlign: 'right',
-        },
+        className: style.className('creation-time'),
         textContent: mapVariables([this._variables.creationTime], creationTime => {
           if (creationTime !== null) {
             return timeToHoursMinutesString(creationTime);
@@ -71,11 +61,34 @@ export default class TimeTicketComponent extends Component {
           }
           evt.stopPropagation();
         },
-        style: {
-          textAlign: 'center',
-          fontSize: '1.2em',
-        },
+        className: style.className('edit-button'),
       }],
     });
   }
 }
+
+style.addRules(`
+  .time-ticket {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-gap: 0.2em;
+    align-items: center;
+    background-color: #555577;
+    border-radius: 0.75em;
+    padding: 0.75em;
+  }
+  `, `
+  .time-ticket .name {
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+  `, `
+  .time-ticket .creation-time {
+    text-align: right;
+  }
+  `, `
+  .time-ticket .edit-button {
+    text-align: center;
+    font-size: 1.2em;
+  }
+`);

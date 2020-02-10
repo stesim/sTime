@@ -7,6 +7,7 @@ import LabeledTextComponent from './labeled_text_component.js';
 import mapVariables from './base/map_variables.js';
 import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
 import { addDataStoreListener } from './base/data_store.js';
+import ComponentStyle from './base/component_style.js';
 
 function formatDate(date) {
   const options = {
@@ -20,6 +21,8 @@ function formatDate(date) {
 function formatTimeString(time) {
   return `${timeDurationToHoursAndMinutesString(time)} (${timeDurationToDecimalHoursString(time)})`;
 }
+
+const style = new ComponentStyle();
 
 export default class DailyTrackerComponent extends Component {
   constructor(dataModel, communicationEndpoint, debugMenu, notificationList) {
@@ -129,168 +132,192 @@ export default class DailyTrackerComponent extends Component {
     }
   }
 
+  _onTaskClicked(task) {
+    if (this._data.taskSwitches.length === 0 ||
+        task.id !== this._getLatestSwitch().taskId) {
+      this._comm.publish({
+        type: 'set-active-task',
+        taskId: task.id
+      });
+    } else {
+      this._comm.publish({type: 'clear-active-task'});
+    }
+  }
+
+  _onTaskEditClicked(task) {
+    const name = prompt('Enter new task name', task.name);
+    if (name) {
+      this._comm.publish({
+        type: 'rename-task',
+        taskId: task.id,
+        taskName: name,
+      });
+    }
+  }
+
+  _addTask() {
+    const name = prompt('Enter task name', '');
+    if (name) {
+      this._comm.publish({
+        type: 'add-task',
+        taskName: name,
+      });
+    }
+  }
+
+  _toggleDebugMenu() {
+    this._isDebugMenuVisible.value = !this._isDebugMenuVisible.value;
+  }
+
   $render() {
     return render({
       type: 'div',
-      style: {
-        display: 'grid',
-        width: '100%',
-        height: '100%',
-        gridTemplateRows: 'auto 1fr auto',
-      },
+      className: style.className('daily-tracker'),
       children: [{
         type: 'div',
-        style: {
-          textAlign: 'center',
-          fontSize: '1.5em',
-          marginBottom: '0.5em',
-        },
+        className: style.className('header'),
         children: [{
           type: 'div',
           textContent: formatDate(new Date()),
-          style: {
-            fontSize: '1.25em',
-            fontWeight: 'bold',
-            padding: '0.5em',
-          },
+          className: style.className('date'),
         }, {
           type: ClockComponent,
         }],
       }, {
         type: 'div',
-        style: {
-          padding: '0.5em',
-          overflow: 'auto',
-        },
+        className: style.className('task-list-container'),
         children: [{
           type: TaskListComponent,
           tasks: this._tasks,
           activeTaskId: this._activeTaskId,
-          onTaskClicked: task => {
-            if (this._data.taskSwitches.length === 0 ||
-                task.id !== this._data.taskSwitches[this._data.taskSwitches.length - 1].taskId) {
-              this._comm.publish({
-                type: 'set-active-task',
-                taskId: task.id
-              });
-            } else {
-              this._comm.publish({
-                type: 'clear-active-task',
-              });
-            }
-          },
-          onEditTaskClicked: task => {
-            const name = prompt(
-              'Enter new task name',
-              task.name);
-            if (name) {
-              this._comm.publish({
-                type: 'rename-task',
-                taskId: task.id,
-                taskName: name,
-              });
-            }
-          },
+          onTaskClicked: task => this._onTaskClicked(task),
+          onEditTaskClicked: task => this._onTaskEditClicked(task),
         }],
       }, {
         type: 'div',
-        style: {
-          backgroundColor: '#444466',
-          padding: '1em',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          overflow: 'visible',
-        },
+        className: style.className('footer'),
         children: [{
           type: LabeledTextComponent,
           label: 'Started',
-          content: mapVariables([this._startTime], () => {
-            if (this._startTime.value !== null) {
-              return timeToHoursMinutesString(this._startTime.value);
-            } else {
-              return '--';
-            }
-          }),
+          content: mapVariables(
+            [this._startTime],
+            startTime => (startTime !== null ? timeToHoursMinutesString(startTime) : '--')
+          ),
         }, {
-          type: 'div',
-          style: {
-            textAlign: 'right',
-          },
-          children: [{
-            type: LabeledTextComponent,
-            label: 'Summary',
-            content: mapVariables([this._totalTime], () => formatTimeString(this._totalTime.value)),
-          }],
+          type: LabeledTextComponent,
+          label: 'Summary',
+          content: mapVariables([this._totalTime], totalTime => formatTimeString(totalTime)),
         }],
       }, {
         type: 'div',
         textContent: '+',
-        onclick: () => {
-          const name = prompt('Enter task name', '');
-          if (name) {
-            this._comm.publish({
-              type: 'add-task',
-              taskName: name,
-            });
-          }
-        },
-        style: {
-          position: 'absolute',
-          bottom: '-0.25em',
-          left: 0,
-          right: 0,
-          margin: '0 auto',
-          fontSize: '4em',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          width: '1.5em',
-          height: '1.5em',
-          lineHeight: '1.5em',
-          borderRadius: '1.0em',
-          backgroundColor: '#555577',
-          cursor: 'pointer',
-          border: '0.1em solid #14141b',
-        },
+        className: style.className('add-task-button'),
+        onclick: () => this._addTask(),
       }, {
         type: 'div',
-        textContent: '↯',
-        style: {
-          position: 'absolute',
-          right: '0.5em',
-          bottom: '4em',
-          width: '1.5em',
-          height: '1.5em',
-          lineHeight: '1.5em',
-          fontSize: '1.25em',
-          textAlign: 'center',
-          color: '#555577',
-          borderRadius: '1.5em',
-          border: '0.2em solid #555577',
-          cursor: 'pointer',
-        },
-        onclick: () => {
-          this._isDebugMenuVisible.value = true;
-        },
-      }, {
-        type: 'div',
-        style: {
-          position: 'absolute',
-          bottom: '8em',
-          left: '20%',
-          right: '0px',
-        },
+        className: style.className('notification-list-container'),
         children: [this._notificationList],
       }, {
         type: 'div',
-        style: mapVariables([this._isDebugMenuVisible], () => ({
-          display: (this._isDebugMenuVisible.value ? '' : 'none'),
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        })),
+        className: mapVariables(
+          [this._isDebugMenuVisible],
+          isVisible => style.classNames('debug-menu-container', !isVisible ? 'hidden' : '').join(' '),
+        ),
         children: [this._debugMenu],
+      }, {
+        type: 'div',
+        textContent: '↯',
+        className: style.className('debug-menu-button'),
+        onclick: () => this._toggleDebugMenu(),
       }],
     });
   }
 }
+
+style.addRules(`
+  .daily-tracker {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-rows: auto 1fr auto;
+  }
+  `, `
+  .header {
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  `, `
+  .date {
+    font-size: 1.25em;
+    font-weight: bold;
+    padding: 0.5em;
+  }
+  `, `
+  .task-list-container {
+    padding: 0.5em;
+    overflow: auto;
+  }
+  `, `
+  .footer {
+    background-color: #444466;
+    padding: 1em;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  `, `
+  .footer > *:nth-child(2) {
+    text-align: right;
+  }
+  `, `
+  .add-task-button {
+    position: absolute;
+    bottom: -0.25em;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    font-size: 4em;
+    font-weight: bold;
+    text-align: center;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    border-radius: 1.0em;
+    background-color: #555577;
+    cursor: pointer;
+    border: 0.1em solid #14141b;
+  }
+  `, `
+  .debug-menu-button {
+    position: absolute;
+    right: 0.5em;
+    bottom: 4em;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    font-size: 1.25em;
+    text-align: center;
+    color: #555577;
+    border-radius: 1.5em;
+    border: 0.2em solid #555577;
+    cursor: pointer;
+  }
+  `, `
+  .notification-list-container {
+    position: absolute;
+    bottom: 8em;
+    max-width: 24em;
+    right: 0px;
+  }
+  `, `
+  .debug-menu-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+  }
+  `, `
+  .hidden {
+    display: none;
+  }
+`);
