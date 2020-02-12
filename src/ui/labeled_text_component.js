@@ -1,6 +1,6 @@
-import Component from './base/component.js';
-import render from './base/render.js';
-import ComponentStyle from './base/component_style.js';
+import Component from '../base/component.js';
+import render from '../base/render.js';
+import ComponentStyle from '../base/component_style.js';
 
 const style = new ComponentStyle();
 

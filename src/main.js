@@ -1,9 +1,9 @@
-import DailyTrackerComponent from './daily_tracker_component.js';
+import DailyTrackerComponent from './ui/daily_tracker_component.js';
 import CommunicationChannel from './base/communication_channel.js';
 import AppController from './app_controller.js';
-import DebugMenuComponent from './debug_menu_component.js';
+import DebugMenuComponent from './ui/debug_menu_component.js';
 import dataStore from './app_data_store.js';
-import NotificationListComponent from './notification_list_component.js';
+import NotificationListComponent from './ui/notification_list_component.js';
 
 const communicationChannel = new CommunicationChannel();
 const appController = new AppController(

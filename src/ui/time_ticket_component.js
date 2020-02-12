@@ -1,8 +1,8 @@
-import Component from './base/component.js';
-import render from './base/render.js';
-import mapVariables from './base/map_variables.js';
-import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
-import ComponentStyle from './base/component_style.js';
+import Component from '../base/component.js';
+import render from '../base/render.js';
+import mapVariables from '../base/map_variables.js';
+import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from '../time_format.js';
+import ComponentStyle from '../base/component_style.js';
 
 function formatTimeString(time) {
   return `${timeDurationToHoursAndMinutesString(time)} (${timeDurationToDecimalHoursString(time)})`;

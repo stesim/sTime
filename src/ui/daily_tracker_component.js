@@ -1,13 +1,13 @@
-import Component from './base/component.js';
-import render from './base/render.js';
+import Component from '../base/component.js';
+import render from '../base/render.js';
 import ClockComponent from './clock_component.js';
-import Variable from './base/variable.js';
+import Variable from '../base/variable.js';
 import TaskListComponent from './task_list_component.js';
 import LabeledTextComponent from './labeled_text_component.js';
-import mapVariables from './base/map_variables.js';
-import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from './time_format.js';
-import { addDataStoreListener } from './base/data_store.js';
-import ComponentStyle from './base/component_style.js';
+import mapVariables from '../base/map_variables.js';
+import { timeDurationToHoursAndMinutesString, timeDurationToDecimalHoursString, timeToHoursMinutesString } from '../time_format.js';
+import { addDataStoreListener } from '../base/data_store.js';
+import ComponentStyle from '../base/component_style.js';
 
 function formatDate(date) {
   const options = {
