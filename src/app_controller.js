@@ -1,18 +1,15 @@
 import AppDataSaver from './app_data_saver.js';
 
 export default class AppController {
-  constructor(dataModel, communicationEndpoint) {
-    this._data = dataModel;
+  constructor(serviceWorkerRegistration, dataStore, communicationEndpoint) {
+    this._data = dataStore;
     this._comm = communicationEndpoint;
     this._comm.subscribe(message => this._handleMessage(message));
 
     this._dataSaver = new AppDataSaver(this._data);
 
-    this._serviceWorker = undefined;
-    navigator.serviceWorker.ready.then((registration) => {
-      this._serviceWorker = registration;
-      this._checkForWaitingUpdate();
-    });
+    this._serviceWorker = serviceWorkerRegistration;
+    this._checkForWaitingUpdate();
 
     this._supportedMessageActions = {
       'activate-update'       : (message) => this._activateUpdate(),
