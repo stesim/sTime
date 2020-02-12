@@ -107,7 +107,7 @@ export default class AppController {
     }
 
     const task = {
-      trimmedName,
+      name: trimmedName,
       creationTime: Date.now(),
     };
 

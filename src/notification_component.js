@@ -2,7 +2,7 @@ import Component from './base/component.js';
 import render from './base/render.js';
 import ComponentStyle from './base/component_style.js';
 import mapVariables from './base/map_variables.js';
-import { timeToHoursMinutesSecondsString } from './time_format.js';
+import { timeToHoursMinutesString } from './time_format.js';
 
 const kindSymbols = {
   default: '✉',
@@ -48,7 +48,7 @@ export default class NotificationComponent extends Component {
         className: style.className('time'),
         textContent: mapVariables(
           [this._variables.timestamp],
-          timestamp => timeToHoursMinutesSecondsString(timestamp),
+          timestamp => timeToHoursMinutesString(timestamp),
         ),
       }, {
         type: 'span',
