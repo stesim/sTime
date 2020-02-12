@@ -21,3 +21,11 @@ export function timeToHoursMinutesString(time) {
     minute: '2-digit',
   });
 }
+
+export function timeToHoursMinutesSecondsString(time) {
+  return new Date(time).toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}

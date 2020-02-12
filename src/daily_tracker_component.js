@@ -306,7 +306,7 @@ style.addRules(`
   .notification-list-container {
     position: absolute;
     bottom: 8em;
-    max-width: 24em;
+    max-width: 20em;
     right: 0px;
   }
   `, `

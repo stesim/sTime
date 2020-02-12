@@ -1,6 +1,8 @@
 import Component from './base/component.js';
 import render from './base/render.js';
 import ComponentStyle from './base/component_style.js';
+import mapVariables from './base/map_variables.js';
+import { timeToHoursMinutesSecondsString } from './time_format.js';
 
 const kindSymbols = {
   default: '✉',
@@ -15,6 +17,7 @@ export default class NotificationComponent extends Component {
     super({
       title: '',
       description: '',
+      timestamp: 0,
     });
 
     this.style = {};
@@ -42,6 +45,13 @@ export default class NotificationComponent extends Component {
         textContent: this._variables.title,
       }, {
         type: 'span',
+        className: style.className('time'),
+        textContent: mapVariables(
+          [this._variables.timestamp],
+          timestamp => timeToHoursMinutesSecondsString(timestamp),
+        ),
+      }, {
+        type: 'span',
         className: style.className('description'),
         textContent: this._variables.description,
       }],
@@ -52,7 +62,7 @@ export default class NotificationComponent extends Component {
 style.addRules(`
   .notification {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
     grid-gap: 0.2em;
     align-items: center;
     padding: 0.75em;
@@ -79,7 +89,11 @@ style.addRules(`
     font-weight: bold;
   }
   `, `
+  .time {
+    opacity: 0.5;
+  }
+  `, `
   .description {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 3;
   }
 `);

@@ -33,6 +33,7 @@ export default class NotificationListComponent extends Component {
           kind: notification.type,
           title: notification.summary,
           description: notification.details,
+          timestamp: notification.timestamp,
           onClick: () => {
             this._comm.publish({
               type: 'dismiss-notification',

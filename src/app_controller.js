@@ -69,17 +69,22 @@ export default class AppController {
   }
 
   _addNotification(notification) {
+    notification.id = this._generateNotificationId();
+    this._data.sys.notifications = [
+      ...this._data.sys.notifications, {
+        ...notification,
+        timestamp: Date.now(),
+      },
+    ];
+  }
+
+  _generateNotificationId() {
     const notifications = this._data.sys.notifications;
     let generatedId;
     do {
       generatedId = Math.floor(Math.random() * 2**32);
     } while (notifications.some(existing => (existing.id === generatedId)));
-
-    notification.id = generatedId;
-    this._data.sys.notifications = [
-      ...notifications,
-      notification,
-    ];
+    return generatedId;
   }
 
   _activateUpdate() {
