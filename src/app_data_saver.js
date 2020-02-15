@@ -1,4 +1,4 @@
-import IndexedDB from './base/indexed_db.js';
+import IndexedDB from './pwa-base/indexed_db.js';
 
 const dbVersion = 2;
 

@@ -1,4 +1,4 @@
-import { createDataStore } from './base/data_store.js';
+import { createDataStore } from './pwa-base/data_store.js';
 
 const dataModel = createDataStore('sTime', {
   sys: {

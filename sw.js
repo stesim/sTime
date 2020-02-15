@@ -7,7 +7,7 @@ const staticCacheVersion = 7;
 const dynamicCacheVersion = 20;
 
 const staticCacheResources = [
-  'src/app.js',
+  'src/main.js',
   'apple-touch-icon.png',
   'index.html',
   '.',

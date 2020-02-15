@@ -1,4 +1,4 @@
-import Component from '../base/component.js';
+import Component from '../pwa-base/component.js';
 import DailyTrackerComponent from './daily_tracker_component.js';
 import DebugMenuComponent from './debug_menu_component.js';
 import NotificationListComponent from './notification_list_component.js';

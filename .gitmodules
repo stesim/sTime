@@ -1,0 +1,3 @@
+[submodule "pwa-base"]
+	path = src/pwa-base
+	url = ../pwa-base.git

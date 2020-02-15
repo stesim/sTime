@@ -1,17 +1,16 @@
 import AppDataSaver from './app_data_saver.js';
 
 export default class AppController {
-  constructor(serviceWorkerRegistration, dataStore, communicationEndpoint) {
+  constructor(dataStore, appChannel, uiChannel) {
     this._data = dataStore;
-    this._comm = communicationEndpoint;
-    this._comm.subscribe(message => this._handleMessage(message));
+    this._appComm = appChannel;
+    this._appComm.subscribe(message => this._handleAppMessage(message));
+    this._uiComm = uiChannel;
+    this._uiComm.subscribe(message => this._handleUiMessage(message));
 
     this._dataSaver = new AppDataSaver(this._data);
 
-    this._serviceWorker = serviceWorkerRegistration;
-    this._checkForWaitingUpdate();
-
-    this._supportedMessageActions = {
+    this._supportedUiMessages = {
       'activate-update'       : (message) => this._activateUpdate(),
       'add-task'              : (message) => this._addTask(message.taskName),
       'clear-active-task'     : (message) => this._clearActiveTask(),
@@ -26,8 +25,8 @@ export default class AppController {
     };
   }
 
-  _checkForWaitingUpdate() {
-    const setUpdateIsWaiting = () => {
+  _handleAppMessage(message) {
+    if (message.type === 'update-available') {
       this._data.sys.updateWaiting = true;
 
       this._addNotification({
@@ -35,29 +34,11 @@ export default class AppController {
         summary: 'Update available',
         details: 'Apply from the debug menu.',
       });
-    };
-
-    const registration = this._serviceWorker;
-    if (registration.waiting) {
-      setUpdateIsWaiting();
-    } else {
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker.state === 'installed') {
-          setUpdateIsWaiting();
-        } else {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed') {
-              setUpdateIsWaiting();
-            }
-          });
-        }
-      });
     }
   }
 
-  _handleMessage(message) {
-    const action = this._supportedMessageActions[message.type];
+  _handleUiMessage(message) {
+    const action = this._supportedUiMessages[message.type];
     if (action !== undefined) {
       action(message);
     } else {
@@ -85,11 +66,7 @@ export default class AppController {
   }
 
   _activateUpdate() {
-    if (this._serviceWorker.waiting) {
-      this._serviceWorker.waiting.postMessage('skip-waiting');
-    } else {
-      alert('No waiting ServiceWorker registration');
-    }
+    this._appComm.publish({type: 'activate-update'});
   }
 
   _addTask(name) {
@@ -122,11 +99,7 @@ export default class AppController {
   }
 
   _clearCache() {
-    if (this._serviceWorker.active) {
-      this._serviceWorker.active.postMessage('clear-cache');
-    } else {
-      alert('No active ServiceWorker registration');
-    }
+    this._appComm.publish({type: 'clear-cache'});
   }
 
   _clearDatabase() {

@@ -1,8 +1,8 @@
-import Component from '../base/component.js';
-import render from '../base/render.js';
-import { addDataStoreListener } from '../base/data_store.js';
-import mapVariables from '../base/map_variables.js';
-import ComponentStyle from '../base/component_style.js';
+import Component from '../pwa-base/component.js';
+import render from '../pwa-base/render.js';
+import { addDataStoreListener } from '../pwa-base/data_store.js';
+import mapVariables from '../pwa-base/map_variables.js';
+import ComponentStyle from '../pwa-base/component_style.js';
 
 const style = new ComponentStyle();
 
